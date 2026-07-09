@@ -29,6 +29,7 @@ interface AdminDashboardProps {
   onDeleteUser: (userId: string) => void;
   onResetDatabase: () => void;
   onSelectStudent: (studentId: string) => void;
+  dbStatus?: { connected: boolean; type: string; host?: string; database?: string; error?: string; };
 }
 
 export default function AdminDashboard({
@@ -37,7 +38,8 @@ export default function AdminDashboard({
   onAddUser,
   onDeleteUser,
   onResetDatabase,
-  onSelectStudent
+  onSelectStudent,
+  dbStatus
 }: AdminDashboardProps) {
   // Add User Form states
   const [userName, setUserName] = useState('');
@@ -169,6 +171,57 @@ export default function AdminDashboard({
         >
           <Database className="h-4 w-4" /> Reset Sandbox Database
         </button>
+      </div>
+
+      {/* DATABASE INTEGRATION CONTROL BAR */}
+      <div className={`p-6 rounded-2xl border shadow-sm space-y-3.5 transition-all ${
+        dbStatus?.connected 
+          ? 'bg-emerald-500/5 border-emerald-500/20' 
+          : 'bg-amber-500/5 border-amber-500/20'
+      }`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-slate-850 uppercase tracking-tight flex items-center gap-2">
+              <Database className={`h-4.5 w-4.5 ${dbStatus?.connected ? 'text-emerald-600' : 'text-amber-600'}`} />
+              Database Integration Status: <span className="font-extrabold text-blue-600">{dbStatus?.type}</span>
+            </h3>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              {dbStatus?.connected 
+                ? `Successfully connected to MySQL database '${dbStatus.database}' at ${dbStatus.host}. All student records, dossiers, and logs are running completely live.`
+                : `Currently running on isolated local storage (JSON Fallback). Any account registration, assessment submissions, or actions will persist locally on this server.`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
+              dbStatus?.connected 
+                ? 'bg-emerald-500/15 text-emerald-700' 
+                : 'bg-amber-500/15 text-amber-700'
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${dbStatus?.connected ? 'bg-emerald-600' : 'bg-amber-600'} animate-pulse`} />
+              {dbStatus?.connected ? 'MySQL LIVE CONNECTED' : 'LOCAL FALLBACK ACTIVE'}
+            </span>
+          </div>
+        </div>
+
+        {!dbStatus?.connected && (
+          <div className="text-[11px] text-slate-600 bg-white border border-slate-200/80 p-4 rounded-xl space-y-1.5 leading-relaxed shadow-xs">
+            <p className="font-bold text-slate-800 flex items-center gap-1">
+              <Database className="h-3.5 w-3.5 text-blue-500" />
+              How to connect to your local or remote MySQL Database:
+            </p>
+            <p>1. Open the **Secrets / Environment Settings** panel in the AI Studio sidebar/settings menu.</p>
+            <p>2. Configure the following environment variables:</p>
+            <div className="font-mono bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[10px] text-slate-700 space-y-0.5 max-w-lg">
+              <p>● <strong className="text-blue-600">MYSQL_HOST</strong> = your_mysql_host_ip_or_domain</p>
+              <p>● <strong className="text-blue-600">MYSQL_USER</strong> = your_mysql_username</p>
+              <p>● <strong className="text-blue-600">MYSQL_PASSWORD</strong> = your_mysql_password</p>
+              <p>● <strong className="text-blue-600">MYSQL_DATABASE</strong> = persona_ai</p>
+              <p>● <strong className="text-blue-600">MYSQL_PORT</strong> = 3306</p>
+              <p>● <strong className="text-blue-600">MYSQL_SSL</strong> = true (if SSL is required, e.g. PlanetScale/Aiven/AWS)</p>
+            </div>
+            <p className="text-[10px] text-slate-500 font-medium">Once updated, the server will automatically restart, verify/create the database, compile the relational schema migrations, and inject initial demo datasets completely on the fly!</p>
+          </div>
+        )}
       </div>
 
       {/* KPI Cards Matrix */}

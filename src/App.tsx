@@ -395,7 +395,7 @@ export default function App() {
         {/* Top Mini Header */}
         <div className="no-print border-b px-8 py-3.5 flex items-center justify-between text-[11px] font-semibold border-slate-200/80 bg-white text-slate-500 shadow-xs">
           <div className="flex items-center gap-1.5">
-            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-emerald-500'} animate-pulse`} />
+            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
             <span>Secure Enterprise Cluster Synced • DB: <strong className="text-slate-700 font-bold">{dbStatus.type}</strong></span>
           </div>
           <div className="flex items-center gap-3">
@@ -459,6 +459,7 @@ export default function App() {
                 onDeleteUser={handleDeleteUser}
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
+                dbStatus={dbStatus}
               />
             ) : currentTab === 'users_manager' ? (
               <div className="p-8">
@@ -469,6 +470,7 @@ export default function App() {
                   onDeleteUser={handleDeleteUser}
                   onResetDatabase={handleResetSandboxDB}
                   onSelectStudent={handleSelectCohortStudentReport}
+                  dbStatus={dbStatus}
                 />
               </div>
             ) : currentTab === 'audit_logs' ? (
@@ -480,6 +482,7 @@ export default function App() {
                   onDeleteUser={handleDeleteUser}
                   onResetDatabase={handleResetSandboxDB}
                   onSelectStudent={handleSelectCohortStudentReport}
+                  dbStatus={dbStatus}
                 />
               </div>
             ) : (
