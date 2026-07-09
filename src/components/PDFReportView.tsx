@@ -29,6 +29,9 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
   const printContainerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showFailurePopup, setShowFailurePopup] = useState(false);
+  const [popupErrorDetails, setPopupErrorDetails] = useState('');
 
   const handlePrint = () => {
     window.print();
@@ -52,13 +55,20 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
         if (onAssessmentUpdated) {
           onAssessmentUpdated(data.assessment);
         }
+        setShowSuccessPopup(true);
       } else {
         const errData = await response.json();
-        setErrorMsg(errData.error || 'Failed to regenerate report with Gemini AI.');
+        const errText = errData.error || 'Failed to regenerate report with Gemini AI.';
+        setErrorMsg(errText);
+        setPopupErrorDetails(errText);
+        setShowFailurePopup(true);
       }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg('Network error while requesting live Gemini evaluation.');
+      const errText = 'Network error while requesting live Gemini evaluation.';
+      setErrorMsg(errText);
+      setPopupErrorDetails(errText);
+      setShowFailurePopup(true);
     } finally {
       setLoading(false);
     }
@@ -86,12 +96,12 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
           </div>
 
           <div className="space-y-3">
-            <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block">
+            <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block animate-pulse">
               Gemini AI Engaged
             </span>
-            <h2 className="text-2xl font-black tracking-tight text-white">Synthesizing Psychometrics...</h2>
+            <h2 className="text-2xl font-black tracking-tight text-white">Analyzing and Generating with AI...</h2>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-              Gemini is evaluating 20 cognitive and behavioral dimensions to build a customized, 15-page student development dossier. This includes action plans for parents, teachers, and counselors.
+              Please wait while Gemini evaluates 20 cognitive and behavioral dimensions to build a customized, 15-page student development dossier. This includes action plans for parents, teachers, and counselors.
             </p>
           </div>
 
@@ -824,6 +834,52 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
         </div>
 
       </div>
+
+      {/* Success Popup Modal */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in no-print">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 text-center transform scale-100 transition-all">
+            <div className="mx-auto h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 border border-emerald-100 animate-bounce">
+              <CheckCircle className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Analysis Completed!</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                The student psychometric report was successfully analyzed and generated with AI. All 15 pages have been updated with personalized behavioral insights.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessPopup(false)}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+            >
+              View Updated Report
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Failure Popup Modal */}
+      {showFailurePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in no-print">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 text-center transform scale-100 transition-all">
+            <div className="mx-auto h-12 w-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 border border-rose-100">
+              <span className="text-xl font-bold">✕</span>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Generation Failed</h3>
+              <p className="text-xs text-rose-600 font-medium bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 leading-relaxed">
+                {popupErrorDetails || "We encountered an error during AI synthesis. Please try again."}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowFailurePopup(false)}
+              className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+            >
+              Close and Retry
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
