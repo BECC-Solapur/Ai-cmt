@@ -751,7 +751,8 @@ export default function AdminDashboard({
 
                         {onDeleteStudent && (
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (window.confirm(`Are you sure you want to delete student '${stud.name}' and all associated assessments?`)) {
                                 onDeleteStudent(stud.id);
                                 const logTime = new Date().toLocaleTimeString();

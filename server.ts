@@ -830,11 +830,16 @@ app.post('/api/admin/reset-database', async (req, res) => {
 app.delete('/api/admin/delete-student/:studentId', async (req, res) => {
   const { studentId } = req.params;
   const allUsers = await getUsers();
-  const target = allUsers.find(u => u.id === studentId);
+  const allAssessments = await getAssessments();
+  const targetUser = allUsers.find(u => u.id === studentId);
+  const targetAssessment = allAssessments.find(a => a.studentId === studentId);
   
-  if (!target) {
+  if (!targetUser && !targetAssessment) {
     return res.status(404).json({ error: 'Student not found' });
   }
+
+  const name = targetUser?.name || targetAssessment?.studentDetails?.name || 'Unknown Student';
+  const email = targetUser?.email || (targetAssessment ? `${targetAssessment.studentDetails.name.toLowerCase().replace(/\s+/g, '')}@school.edu` : 'unknown@school.edu');
 
   await deleteStudentData(studentId);
 
@@ -844,7 +849,7 @@ app.delete('/api/admin/delete-student/:studentId', async (req, res) => {
     userName: 'Principal Evelyn Vance',
     userRole: 'Admin',
     action: `Student & Assessments Deleted`,
-    details: `Deleted student profile and all associated reports for ${target.name} (${target.email}).`,
+    details: `Deleted student profile and all associated reports for ${name} (${email}).`,
     timestamp: new Date().toISOString()
   });
 
