@@ -29,10 +29,12 @@ import {
   Heart,
   Brain,
   Compass,
-  Clock
+  Clock,
+  X,
+  Target
 } from 'lucide-react';
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell
 } from 'recharts';
 import { User, StudentAssessment, UserRole } from '../types';
 
@@ -45,6 +47,8 @@ interface AdminDashboardProps {
   onSelectStudent: (studentId: string) => void;
   dbStatus?: { connected: boolean; type: string; host?: string; database?: string; error?: string; };
   activeTab?: string;
+  onDeleteStudent?: (studentId: string) => void;
+  onClearDatabase?: () => void;
 }
 
 export default function AdminDashboard({
@@ -55,7 +59,9 @@ export default function AdminDashboard({
   onResetDatabase,
   onSelectStudent,
   dbStatus,
-  activeTab = 'dashboard'
+  activeTab = 'dashboard',
+  onDeleteStudent,
+  onClearDatabase
 }: AdminDashboardProps) {
   // Add User Form states
   const [userName, setUserName] = useState('');
@@ -73,6 +79,85 @@ export default function AdminDashboard({
   const [studentSearch, setStudentSearch] = useState('');
   const [studentGradeFilter, setStudentGradeFilter] = useState('All');
   const [selectedStudentDetailsId, setSelectedStudentDetailsId] = useState<string | null>(null);
+  const [selectedModalStudent, setSelectedModalStudent] = useState<any | null>(null);
+
+  const getChartData = (assessment: StudentAssessment | undefined) => {
+    if (!assessment || !assessment.scores) return [];
+    return Object.entries(assessment.scores).map(([name, score]) => ({
+      name,
+      score: Math.round(score)
+    }));
+  };
+
+  const getPieData = (assessment: StudentAssessment | undefined) => {
+    if (!assessment || !assessment.scores) return [];
+    const scores = Object.values(assessment.scores);
+    const strengths = scores.filter(s => s >= 75).length;
+    const competencies = scores.filter(s => s >= 50 && s < 75).length;
+    const growth = scores.filter(s => s < 50).length;
+
+    return [
+      { name: 'Stellar Strengths (>=75)', value: strengths, color: '#10b981' },
+      { name: 'Active Competencies (50-74)', value: competencies, color: '#3b82f6' },
+      { name: 'Growth Focus Areas (<50)', value: growth, color: '#f43f5e' }
+    ];
+  };
+
+  const handleSimulateAssessment = async (stud: any) => {
+    try {
+      const mockAnswers = [
+        { questionId: 1, category: 'Self Awareness', score: 3 },
+        { questionId: 2, category: 'Self Awareness', score: 4 },
+        { questionId: 3, category: 'Confidence', score: 3 },
+        { questionId: 4, category: 'Confidence', score: 3 },
+        { questionId: 5, category: 'Learning Style', score: 4 },
+        { questionId: 6, category: 'Learning Style', score: 4 },
+        { questionId: 7, category: 'Motivation', score: 3 },
+        { questionId: 8, category: 'Motivation', score: 4 },
+        { questionId: 9, category: 'Emotional Regulation', score: 3 },
+        { questionId: 10, category: 'Emotional Regulation', score: 3 },
+        { questionId: 11, category: 'Communication', score: 4 },
+        { questionId: 12, category: 'Communication', score: 3 },
+        { questionId: 13, category: 'Leadership', score: 3 },
+        { questionId: 14, category: 'Leadership', score: 4 },
+        { questionId: 15, category: 'Creativity', score: 4 },
+        { questionId: 16, category: 'Creativity', score: 4 },
+        { questionId: 17, category: 'Decision Making', score: 3 },
+        { questionId: 18, category: 'Decision Making', score: 3 },
+        { questionId: 19, category: 'Career Interest', score: 4 },
+        { questionId: 20, category: 'Career Interest', score: 4 },
+      ];
+
+      const response = await fetch('/api/assessments/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          studentId: stud.id,
+          studentDetails: {
+            name: stud.name,
+            age: stud.age || 16,
+            gender: stud.gender || 'Male',
+            grade: stud.grade,
+            section: stud.section,
+            school: 'Pinecrest Academy'
+          },
+          answers: mockAnswers
+        })
+      });
+
+      if (response.ok) {
+        alert(`Successfully generated simulated baseline dossier for ${stud.name}!`);
+        window.location.reload();
+      } else {
+        alert('Failed to simulate assessment.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // System audit stream
   const [auditLogs, setAuditLogs] = useState<any[]>([
@@ -248,21 +333,41 @@ export default function AdminDashboard({
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            if (window.confirm('Reset local sandbox database to pre-seeded enterprise cohort?')) {
-              onResetDatabase();
-              // Add log
-              setAuditLogs(prev => [
-                { id: Date.now(), time: new Date().toLocaleTimeString(), event: 'Database reset triggered to pre-seeded baseline.', level: 'WARNING' },
-                ...prev
-              ]);
-            }
-          }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition cursor-pointer"
-        >
-          <Database className="h-4 w-4" /> Reset Sandbox Database
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {onClearDatabase && (
+            <button
+              onClick={() => {
+                if (window.confirm('Wipe database clean of all default student records and assessments? This allows you to start testing with a blank slate.')) {
+                  onClearDatabase();
+                  // Add log
+                  setAuditLogs(prev => [
+                    { id: Date.now(), time: new Date().toLocaleTimeString(), event: 'Administrative database wipe executed. All student entries cleared.', level: 'WARNING' },
+                    ...prev
+                  ]);
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition cursor-pointer"
+            >
+              <Trash2 className="h-4 w-4 text-rose-600" /> Clear Student Records
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              if (window.confirm('Reset local sandbox database to pre-seeded enterprise cohort?')) {
+                onResetDatabase();
+                // Add log
+                setAuditLogs(prev => [
+                  { id: Date.now(), time: new Date().toLocaleTimeString(), event: 'Database reset triggered to pre-seeded baseline.', level: 'WARNING' },
+                  ...prev
+                ]);
+              }
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition cursor-pointer"
+          >
+            <Database className="h-4 w-4" /> Reset Sandbox Database
+          </button>
+        </div>
       </div>
 
       {/* DATABASE INTEGRATION CONTROL BAR (Always visible for admin reassurance) */}
@@ -555,8 +660,12 @@ export default function AdminDashboard({
                   >
                     {/* Header Row */}
                     <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center text-base font-extrabold shadow-inner ${
+                      <div 
+                        onClick={() => setSelectedModalStudent(stud)}
+                        className="flex items-start gap-4 cursor-pointer hover:opacity-85 group"
+                        title="Click to open interactive analysis popup"
+                      >
+                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center text-base font-extrabold shadow-inner transition group-hover:scale-105 ${
                           stud.hasAssessment 
                             ? 'bg-emerald-500/10 border border-emerald-200 text-emerald-700' 
                             : 'bg-amber-500/10 border border-amber-200 text-amber-700'
@@ -564,7 +673,7 @@ export default function AdminDashboard({
                           {stud.name[0]}
                         </div>
                         <div className="space-y-1">
-                          <h4 className="text-sm font-extrabold text-slate-850 tracking-tight flex items-center gap-2">
+                          <h4 className="text-sm font-extrabold text-slate-850 tracking-tight flex items-center gap-2 group-hover:text-blue-600 transition">
                             {stud.name}
                             <span className="text-[10px] font-bold text-slate-400">({stud.email})</span>
                           </h4>
@@ -611,18 +720,10 @@ export default function AdminDashboard({
                         {stud.hasAssessment ? (
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => setSelectedStudentDetailsId(isExpanded ? null : stud.id)}
+                              onClick={() => setSelectedModalStudent(stud)}
                               className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-700 font-bold rounded-lg text-[10px] flex items-center gap-1 transition cursor-pointer"
                             >
-                              {isExpanded ? (
-                                <>
-                                  <ChevronUp className="h-3.5 w-3.5 text-slate-500" /> Hide Preview
-                                </>
-                              ) : (
-                                <>
-                                  <ChevronDown className="h-3.5 w-3.5 text-slate-500" /> Quick Analysis
-                                </>
-                              )}
+                              <BarChart2 className="h-3.5 w-3.5 text-blue-500" /> Visual Analytics
                             </button>
                             <button
                               onClick={() => onSelectStudent(stud.id)}
@@ -645,6 +746,25 @@ export default function AdminDashboard({
                             className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-[10px] flex items-center gap-1.5 shadow-xs border border-amber-500 hover:brightness-110 active:scale-98 transition cursor-pointer"
                           >
                             <Send className="h-3 w-3" /> Send Reminder Alert
+                          </button>
+                        )}
+
+                        {onDeleteStudent && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete student '${stud.name}' and all associated assessments?`)) {
+                                onDeleteStudent(stud.id);
+                                const logTime = new Date().toLocaleTimeString();
+                                setAuditLogs(prev => [
+                                  { id: Date.now(), time: logTime, event: `Student '${stud.name}' and dossiers deleted.`, level: 'INFO' },
+                                  ...prev
+                                ]);
+                              }
+                            }}
+                            className="p-2 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Student Profile"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         )}
                       </div>
@@ -1020,6 +1140,227 @@ export default function AdminDashboard({
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {selectedModalStudent && (
+        <div className="fixed inset-0 z-50 overflow-y-auto no-scrollbar flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md animate-fade-in no-print">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto no-scrollbar flex flex-col relative animate-slide-up">
+            {/* Header with decorative accent */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
+            
+            {/* Modal Navigation & Exit */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-extrabold uppercase tracking-widest">
+                  Student Interactive Analytics
+                </span>
+                <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  Psychometric Dossier for {selectedModalStudent.name}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setSelectedModalStudent(null)}
+                className="h-9 w-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
+              {/* general student details card */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-xs">
+                <div className="space-y-1">
+                  <span className="text-slate-400 font-bold uppercase text-[9px]">Class Designation</span>
+                  <p className="font-extrabold text-slate-800">{selectedModalStudent.grade} - Section {selectedModalStudent.section}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-400 font-bold uppercase text-[9px]">Age & Gender</span>
+                  <p className="font-extrabold text-slate-800">{selectedModalStudent.age || '16'} Yrs • {selectedModalStudent.gender || 'Male'}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-400 font-bold uppercase text-[9px]">Institutional Email</span>
+                  <p className="font-mono text-slate-600 truncate" title={selectedModalStudent.email}>{selectedModalStudent.email}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-400 font-bold uppercase text-[9px]">Dossier Status</span>
+                  <p className="font-extrabold text-slate-800 flex items-center gap-1">
+                    <span className={`h-2 w-2 rounded-full ${selectedModalStudent.hasAssessment ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
+                    {selectedModalStudent.hasAssessment ? 'DOSSIER ACTIVE' : 'NO ASSESSMENT'}
+                  </p>
+                </div>
+              </div>
+
+              {!selectedModalStudent.hasAssessment ? (
+                <div className="p-8 text-center space-y-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                  <div className="h-12 w-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto shadow-inner">
+                    <AlertCircle className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 max-w-md mx-auto">
+                    <h4 className="text-sm font-bold text-slate-850">No Assessment Data Available</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      This student has been registered but has not completed their psychometric assessment yet. You can trigger a high-fidelity simulated baseline to test the visualizations immediately, or dispatch a manual reminder alert.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => handleSimulateAssessment(selectedModalStudent)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer"
+                    >
+                      Generate Simulated Baseline
+                    </button>
+                    <button
+                      onClick={() => {
+                        alert(`Sent intake questionnaire email reminder to ${selectedModalStudent.name} (${selectedModalStudent.email})`);
+                        setSelectedModalStudent(null);
+                      }}
+                      className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer"
+                    >
+                      Send Reminder
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* CHARTS CONTAINER (GORGEOUS GRID) */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* LEFT COLUMN - DIMENSIONAL BAR/RADAR CHART (GRAPH) */}
+                    <div className="md:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col">
+                      <div className="mb-4 space-y-0.5">
+                        <span className="text-[9px] text-indigo-600 uppercase font-black tracking-widest block">Trait Comparison Graph</span>
+                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Dimensional Score Profile</h4>
+                      </div>
+                      <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={getChartData(selectedModalStudent.assessment)}>
+                            <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
+                            <YAxis stroke="#64748b" fontSize={9} domain={[0, 100]} tickLine={false} />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '10px' }}
+                              labelStyle={{ fontWeight: 'bold', color: '#60a5fa' }}
+                            />
+                            <Bar dataKey="score" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+                              {getChartData(selectedModalStudent.assessment).map((entry: any, index: number) => {
+                                const score = entry.score;
+                                let color = '#10b981';
+                                if (score < 50) color = '#f43f5e';
+                                else if (score < 75) color = '#3b82f6';
+                                return <Cell key={`cell-${index}`} fill={color} />;
+                              })}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-2 text-center italic">
+                        Color coding: <span className="text-rose-500 font-bold">Growth Areas (&lt;50)</span> • <span className="text-blue-500 font-bold">Competencies (50-74)</span> • <span className="text-emerald-500 font-bold">Strengths (&gt;=75)</span>
+                      </p>
+                    </div>
+
+                    {/* RIGHT COLUMN - DISTRIBUTION PIE CHART (PI DIAGRAM) */}
+                    <div className="md:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                      <div className="mb-2 space-y-0.5">
+                        <span className="text-[9px] text-indigo-600 uppercase font-black tracking-widest block">Trait Level Breakdown</span>
+                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Strengths Pie Diagram</h4>
+                      </div>
+                      
+                      <div className="h-44 w-full flex items-center justify-center relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={getPieData(selectedModalStudent.assessment)}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={45}
+                              outerRadius={65}
+                              paddingAngle={4}
+                              dataKey="value"
+                            >
+                              {getPieData(selectedModalStudent.assessment).map((entry: any, index: number) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '10px' }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <span className="text-lg font-black text-slate-800">{selectedModalStudent.assessment.growthIndex}%</span>
+                          <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">Growth Index</span>
+                        </div>
+                      </div>
+
+                      {/* Pie chart legends */}
+                      <div className="space-y-1.5 text-xs text-slate-600">
+                        {getPieData(selectedModalStudent.assessment).map((entry: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 transition">
+                            <div className="flex items-center gap-2">
+                              <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                              <span className="font-semibold text-slate-700 text-[11px]">{entry.name}</span>
+                            </div>
+                            <span className="bg-slate-100 text-slate-800 font-extrabold px-1.5 py-0.5 rounded text-[10px]">
+                              {entry.value} / 10 Traits
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI INSIGHTS & SIGNATURE */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-indigo-600 flex items-center gap-1">
+                        <Sparkles className="h-4 w-4" /> AI Psychometric Signature
+                      </h4>
+                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                        {selectedModalStudent.assessment.aiInsights.summary || 'Developing steady academic and self-regulation profiles.'}
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="bg-white p-3 rounded-xl border border-slate-150 shadow-xs space-y-0.5">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase">Personality Type</span>
+                          <p className="text-xs font-bold text-indigo-600">{selectedModalStudent.assessment.aiInsights.personalityType || 'Strategic Planner'}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-xl border border-slate-150 shadow-xs space-y-0.5">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase">Communication</span>
+                          <p className="text-xs font-bold text-indigo-600">{selectedModalStudent.assessment.aiInsights.communicationType || 'Assertive & Clear'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-3 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-rose-600 flex items-center gap-1">
+                          <Target className="h-4 w-4" /> Career Clusters & Guidance
+                        </h4>
+                        <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                          Based on high cognitive reflection scores, this student thrives in environments prioritizing strategic analytics, engineering concepts, and team collaboration.
+                        </p>
+                        <div className="bg-white p-3 rounded-xl border border-slate-150 shadow-xs">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase block mb-0.5">Recommended Track</span>
+                          <p className="text-xs font-bold text-rose-600 leading-normal">
+                            {selectedModalStudent.assessment.aiInsights.careerSuggestion || 'Science, Technology, Engineering & Mathematics (STEM)'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setSelectedModalStudent(null);
+                          onSelectStudent(selectedModalStudent.id);
+                        }}
+                        className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <FileText className="h-3.5 w-3.5" /> Open Detailed 15-Page Dossier <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

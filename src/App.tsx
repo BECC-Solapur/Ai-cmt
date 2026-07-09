@@ -243,6 +243,48 @@ export default function App() {
     }
   };
 
+  // Delete specific student profile and associated assessments
+  const handleDeleteStudent = async (studentId: string) => {
+    try {
+      const response = await fetch(`/api/admin/delete-student/${studentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setUsers(prev => prev.filter(u => u.id !== studentId));
+        setAssessments(prev => prev.filter(a => a.studentId !== studentId));
+      } else {
+        alert('Could not remove student profile.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Wipe the entire database clean (except Admin account)
+  const handleClearDatabase = async () => {
+    try {
+      const response = await fetch('/api/admin/clear-database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Local sandbox database wiped successfully! You can now register or intake brand new student profiles.');
+        setUsers(prev => prev.filter(u => u.role === 'Admin'));
+        setAssessments([]);
+      } else {
+        alert('Database wipe failed.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Successful assessment questionnaire intake handler
   const handleAssessmentCompleted = (completedResult: StudentAssessment) => {
     // Append to local state list
@@ -457,6 +499,8 @@ export default function App() {
                 assessments={assessments}
                 onAddUser={handleCreateUser}
                 onDeleteUser={handleDeleteUser}
+                onDeleteStudent={handleDeleteStudent}
+                onClearDatabase={handleClearDatabase}
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
                 dbStatus={dbStatus}
@@ -468,6 +512,8 @@ export default function App() {
                 assessments={assessments}
                 onAddUser={handleCreateUser}
                 onDeleteUser={handleDeleteUser}
+                onDeleteStudent={handleDeleteStudent}
+                onClearDatabase={handleClearDatabase}
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
                 dbStatus={dbStatus}
@@ -479,6 +525,8 @@ export default function App() {
                 assessments={assessments}
                 onAddUser={handleCreateUser}
                 onDeleteUser={handleDeleteUser}
+                onDeleteStudent={handleDeleteStudent}
+                onClearDatabase={handleClearDatabase}
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
                 dbStatus={dbStatus}
@@ -490,6 +538,8 @@ export default function App() {
                 assessments={assessments}
                 onAddUser={handleCreateUser}
                 onDeleteUser={handleDeleteUser}
+                onDeleteStudent={handleDeleteStudent}
+                onClearDatabase={handleClearDatabase}
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
                 dbStatus={dbStatus}

@@ -535,6 +535,38 @@ async function resetDatabase() {
   saveDB();
 }
 
+async function deleteStudentData(studentId: string) {
+  if (pool) {
+    try {
+      await pool.query('DELETE FROM assessments WHERE studentId = ?', [studentId]);
+      await pool.query('DELETE FROM users WHERE id = ?', [studentId]);
+      return;
+    } catch (err) {
+      console.error('MySQL deleteStudentData fail:', err);
+    }
+  }
+  dbData.assessments = dbData.assessments.filter(a => a.studentId !== studentId);
+  dbData.users = dbData.users.filter(u => u.id !== studentId);
+  saveDB();
+}
+
+async function clearDatabaseData() {
+  if (pool) {
+    try {
+      await pool.query('DELETE FROM assessments');
+      await pool.query('DELETE FROM users WHERE role != "Admin"');
+      await pool.query('DELETE FROM audit_logs');
+      return;
+    } catch (err) {
+      console.error('MySQL clearDatabaseData fail:', err);
+    }
+  }
+  dbData.assessments = [];
+  dbData.users = dbData.users.filter(u => u.role === 'Admin');
+  dbData.auditLogs = [];
+  saveDB();
+}
+
 // ==========================================
 // EXPRESS SERVER & MIDDLEWARE
 // ==========================================
@@ -792,6 +824,48 @@ app.delete('/api/admin/delete-user/:userId', async (req, res) => {
 app.post('/api/admin/reset-database', async (req, res) => {
   await resetDatabase();
   res.json({ status: 'ok', message: 'Database reset to default enterprise seed cohort.' });
+});
+
+// Delete specific student user and all associated assessments
+app.delete('/api/admin/delete-student/:studentId', async (req, res) => {
+  const { studentId } = req.params;
+  const allUsers = await getUsers();
+  const target = allUsers.find(u => u.id === studentId);
+  
+  if (!target) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+
+  await deleteStudentData(studentId);
+
+  await addAuditLog({
+    id: `log_${Date.now()}`,
+    userId: 'user_admin_1',
+    userName: 'Principal Evelyn Vance',
+    userRole: 'Admin',
+    action: `Student & Assessments Deleted`,
+    details: `Deleted student profile and all associated reports for ${target.name} (${target.email}).`,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ success: true });
+});
+
+// Clear entire database except Admin
+app.post('/api/admin/clear-database', async (req, res) => {
+  await clearDatabaseData();
+  
+  await addAuditLog({
+    id: `log_${Date.now()}`,
+    userId: 'user_admin_1',
+    userName: 'Principal Evelyn Vance',
+    userRole: 'Admin',
+    action: `Database Wiped`,
+    details: `Administrative database wipe completed. All pre-seeded and custom students, parents, teachers, and assessments deleted.`,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ success: true, message: 'Database wiped clean of all default student data successfully.' });
 });
 
 // 8. Retrieve User Lists (supports both wrapper and raw arrays for extreme robustness)
