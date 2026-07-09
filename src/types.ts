@@ -82,6 +82,7 @@ export interface AIInsights {
     careerReadinessScore: number; // 0 - 100
     improvementProbability: number; // 0 - 100
   };
+  isFallback?: boolean;
 }
 
 export interface StudentAssessment {

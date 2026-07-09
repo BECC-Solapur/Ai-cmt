@@ -11,7 +11,7 @@ import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import { calculateScores, calculateGrowthIndex, generateLocalPsychometrics, generateGeminiPsychometrics } from './src/assessmentEngine';
-import { StudentAssessment, User, AuditLog } from './src/types';
+import { StudentAssessment, User, AuditLog, AIInsights } from './src/types';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +38,41 @@ if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY') {
   }
 } else {
   console.log('No valid GEMINI_API_KEY environment variable found. Falling back to local scoring engine.');
+}
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function generatePsychometricsWithRetryAndFallback(
+  scores: { [category: string]: number },
+  studentDetails: { name: string; age: number; gender: string; grade: string },
+  answersTextSummary: string,
+  geminiClient: any,
+  maxRetries = 2
+): Promise<AIInsights> {
+  let attempt = 0;
+  while (attempt <= maxRetries) {
+    try {
+      console.log(`[Gemini Attempt ${attempt + 1}/${maxRetries + 1}] Invoking Gemini AI for ${studentDetails.name}...`);
+      const insights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, geminiClient);
+      console.log(`[Gemini Success] Successfully generated psychometrics with Gemini AI for ${studentDetails.name}`);
+      return insights;
+    } catch (err: any) {
+      attempt++;
+      console.error(`[Gemini Error] Attempt ${attempt} failed for ${studentDetails.name}:`, err.message || err);
+      if (attempt <= maxRetries) {
+        const waitTime = attempt * 1500; // Exponential backoff: 1.5s, 3s
+        console.log(`Retrying in ${waitTime}ms...`);
+        await delay(waitTime);
+      }
+    }
+  }
+
+  // If we reach here, all retries failed. Fall back gracefully to local psychometrics!
+  console.warn(`[Gemini Fallback] All ${maxRetries + 1} attempts failed. Falling back gracefully to local rule-based psychometrics for ${studentDetails.name}`);
+  const fallbackInsights = generateLocalPsychometrics(scores, studentDetails);
+  fallbackInsights.isFallback = true;
+  fallbackInsights.summary = `${fallbackInsights.summary}\n\n*(Note: This report was compiled using our secure local psychometric rule engine because the live Gemini AI service was temporarily experiencing high demand. Click 'Regenerate AI' in the Teacher Dashboard to upgrade this report to live Gemini analysis once the service is available.)*`;
+  return fallbackInsights;
 }
 
 // Ensure database folders exist for JSON fallback
@@ -929,20 +964,12 @@ app.post('/api/assessments/submit', async (req, res) => {
   let aiInsights;
 
   if (ai) {
-    console.log(`Invoking Gemini for student: ${studentDetails.name}...`);
-    try {
-      aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
-    } catch (err: any) {
-      console.error('Failed Gemini invocation:', err);
-      return res.status(500).json({
-        error: `Gemini AI service error: ${err.message || err}. Please try again later.`
-      });
-    }
+    aiInsights = await generatePsychometricsWithRetryAndFallback(scores, studentDetails, answersTextSummary, ai);
   } else {
-    console.error('Failed to generate with AI: GEMINI_API_KEY is not configured.');
-    return res.status(400).json({
-      error: 'GEMINI_API_KEY is not configured in your environment. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY, and restart the server to enable live Gemini AI psychometric evaluation.'
-    });
+    console.warn('GEMINI_API_KEY is not configured. Falling back to local psychometrics.');
+    aiInsights = generateLocalPsychometrics(scores, studentDetails);
+    aiInsights.isFallback = true;
+    aiInsights.summary = `${aiInsights.summary}\n\n*(Note: This report was compiled using our secure local psychometric rule engine because live Gemini AI is not configured.)*`;
   }
 
   const assessmentId = `assess_${Date.now()}`;
@@ -1008,11 +1035,25 @@ app.post('/api/assessments/regenerate-ai', async (req, res) => {
 
   if (ai) {
     console.log(`Regenerating with Gemini AI for student: ${studentDetails.name}...`);
-    try {
-      aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
-    } catch (err: any) {
-      console.error('Failed to regenerate with Gemini AI:', err);
-      return res.status(500).json({ error: `Gemini AI service error: ${err.message}` });
+    let attempt = 0;
+    const maxRetries = 2;
+    while (attempt <= maxRetries) {
+      try {
+        aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
+        break; // Success!
+      } catch (err: any) {
+        attempt++;
+        console.error(`Regenerate Attempt ${attempt} failed for ${studentDetails.name}:`, err.message || err);
+        if (attempt <= maxRetries) {
+          const waitTime = attempt * 1500;
+          console.log(`Retrying regenerate in ${waitTime}ms...`);
+          await delay(waitTime);
+        } else {
+          return res.status(503).json({ 
+            error: `Gemini AI is currently experiencing high demand (${err.message || err}). Please try again in a few moments.` 
+          });
+        }
+      }
     }
   } else {
     console.error('Failed to regenerate: GEMINI_API_KEY is not configured.');
