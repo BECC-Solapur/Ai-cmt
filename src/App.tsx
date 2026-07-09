@@ -462,6 +462,7 @@ export default function App() {
                 users={users}
                 teacherUser={user}
                 onSelectStudent={handleSelectCohortStudentReport}
+                onAssessmentUpdated={handleAssessmentUpdated}
               />
             ) : currentTab === 'students_list' ? (
               <div className="p-8">
@@ -470,6 +471,7 @@ export default function App() {
                   users={users}
                   teacherUser={user}
                   onSelectStudent={handleSelectCohortStudentReport}
+                  onAssessmentUpdated={handleAssessmentUpdated}
                 />
               </div>
             ) : (
