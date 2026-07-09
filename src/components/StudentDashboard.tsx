@@ -46,25 +46,25 @@ export default function StudentDashboard({
   const [notifySuccess, setNotifySuccess] = useState(false);
 
   // Check if dark class exists on document
-  const isDark = typeof document !== 'undefined' && document.querySelector('.dark') !== null;
+  const isDark = false;
 
   if (!assessment) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] font-sans p-6 text-center">
-        <div className="max-w-md p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-2xl relative overflow-hidden">
+        <div className="max-w-md p-8 bg-white rounded-3xl border border-slate-200 space-y-6 shadow-sm relative overflow-hidden">
           <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-blue-500/5 blur-[80px] rounded-full" />
-          <div className="h-14 w-14 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-blue-600 dark:text-blue-500 mx-auto shadow-sm">
+          <div className="h-14 w-14 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-blue-600 mx-auto shadow-sm">
             <Activity className="h-6 w-6" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">No Assessment Record Found</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">No Assessment Record Found</h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
               Unlock your personalized psychological index, professional SWOT metrics, academic risk flags, and counselor growth plans.
             </p>
           </div>
           <button
             onClick={onTakeAssessment}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 font-bold text-white text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer transition-colors"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 font-bold text-white text-xs uppercase tracking-wider rounded-xl shadow-sm cursor-pointer transition-colors"
           >
             Launch 20-Question MCQ Intake
           </button>
@@ -129,18 +129,18 @@ export default function StudentDashboard({
   };
 
   return (
-    <div className="font-sans text-slate-800 dark:text-slate-200 p-6 space-y-6">
+    <div className="font-sans text-slate-800 p-6 space-y-6">
       
       {/* Banner / Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="space-y-1">
-          <span className="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-black tracking-widest flex items-center gap-1">
+          <span className="text-[10px] text-blue-600 uppercase font-black tracking-widest flex items-center gap-1">
             <Sparkles className="h-3 w-3" /> STUDENT ACADEMIC PROFILE PORTAL
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Welcome Back, {assessment.studentDetails.name}!
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Current Cohort: {assessment.studentDetails.grade} • Section {assessment.studentDetails.section} • Pinecrest Academy
           </p>
         </div>
@@ -148,9 +148,9 @@ export default function StudentDashboard({
         <div className="flex gap-2">
           <button
             onClick={onOpenReport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm dark:shadow-none"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm"
           >
-            <FileText className="h-4 w-4 text-blue-600 dark:text-blue-500" /> View 15-Page dossier
+            <FileText className="h-4 w-4 text-blue-600" /> View 15-Page dossier
           </button>
           
           <button
@@ -165,46 +165,46 @@ export default function StudentDashboard({
       {/* Primary KPI Card Matrix */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* GROWTH INDEX */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 relative overflow-hidden flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 dark:text-white text-lg bg-slate-50 dark:bg-slate-950">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 relative overflow-hidden flex items-center gap-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 text-lg bg-slate-50">
             {assessment.growthIndex}%
           </div>
           <div>
-            <span className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider block">AI Growth Index</span>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Balanced Development</span>
+            <span className="text-[9px] font-black uppercase text-blue-600 tracking-wider block">AI Growth Index</span>
+            <span className="text-sm font-bold text-slate-700">Balanced Development</span>
           </div>
         </div>
 
         {/* PERSONALITY TYPE */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-blue-600 dark:text-blue-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-blue-600">
             <Award className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Personality Profile</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block max-w-[130px]">{ai.personalityType}</span>
+            <span className="text-xs font-bold text-slate-700 truncate block max-w-[130px]">{ai.personalityType}</span>
           </div>
         </div>
 
         {/* FUTURE READY */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-indigo-600 dark:text-accent-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-indigo-600">
             <Briefcase className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Career Interest</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block max-w-[130px]">{ai.careerSuggestion.split(',')[0]}</span>
+            <span className="text-xs font-bold text-slate-700 truncate block max-w-[130px]">{ai.careerSuggestion.split(',')[0]}</span>
           </div>
         </div>
 
         {/* RISK PROFILE */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className={`p-3 rounded-xl border ${ai.riskIndicator === 'High' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500'}`}>
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className={`p-3 rounded-xl border ${ai.riskIndicator === 'High' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
             <ShieldAlert className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Anxiety Risk Flag</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{ai.riskIndicator} Risk Level</span>
+            <span className="text-xs font-bold text-slate-700">{ai.riskIndicator} Risk Level</span>
           </div>
         </div>
       </div>
@@ -213,14 +213,14 @@ export default function StudentDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* BAR SCORES */}
-        <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Category Score Breakdowns</h4>
           <div className="h-[200px] w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <XAxis dataKey="name" stroke={isDark ? "#64748b" : "#475569"} fontSize={10} />
-                <YAxis stroke={isDark ? "#64748b" : "#475569"} fontSize={10} domain={[0, 100]} />
-                <Tooltip contentStyle={{ background: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', color: isDark ? '#f1f5f9' : '#0f172a' }} />
+                <XAxis dataKey="name" stroke="#475569" fontSize={10} />
+                <YAxis stroke="#475569" fontSize={10} domain={[0, 100]} />
+                <Tooltip contentStyle={{ background: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a' }} />
                 <Bar dataKey="score" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -228,22 +228,22 @@ export default function StudentDashboard({
         </div>
 
         {/* LINE COHORT PROGRESS OVER MONTHS */}
-        <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Monthly Growth Index Progression</h4>
           <div className="h-[200px] w-full text-xs">
             {growthPathData.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={growthPathData}>
-                  <XAxis dataKey="date" stroke={isDark ? "#64748b" : "#475569"} fontSize={10} />
-                  <YAxis stroke={isDark ? "#64748b" : "#475569"} fontSize={10} domain={[40, 100]} />
-                  <Tooltip contentStyle={{ background: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', color: isDark ? '#f1f5f9' : '#0f172a' }} />
-                  <CartesianGrid stroke={isDark ? "#1e293b" : "#f1f5f9"} strokeDasharray="3 3" />
+                  <XAxis dataKey="date" stroke="#475569" fontSize={10} />
+                  <YAxis stroke="#475569" fontSize={10} domain={[40, 100]} />
+                  <Tooltip contentStyle={{ background: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a' }} />
+                  <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" />
                   <Line type="monotone" dataKey="growthIndex" stroke="#10b981" strokeWidth={3} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                <TrendingUp className="h-8 w-8 text-slate-400 dark:text-slate-700 mb-2" />
+                <TrendingUp className="h-8 w-8 text-slate-400 mb-2" />
                 <p className="text-[11px] text-slate-500">Take multiple assessments over the next term to visualize your monthly growth path index.</p>
               </div>
             )}
@@ -251,7 +251,7 @@ export default function StudentDashboard({
         </div>
 
         {/* INTEREST BIASES DONUT */}
-        <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Primary Core Strength Distribution</h4>
           <div className="h-[200px] w-full text-xs relative flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -269,12 +269,12 @@ export default function StudentDashboard({
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', color: isDark ? '#f1f5f9' : '#0f172a' }} />
+                <Tooltip contentStyle={{ background: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a' }} />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label inside donut */}
             <div className="absolute text-center">
-              <span className="text-lg font-black text-slate-850 dark:text-slate-200">{scores['Creativity'] || 50}%</span>
+              <span className="text-lg font-black text-slate-800">{scores['Creativity'] || 50}%</span>
               <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Innovation</p>
             </div>
           </div>
@@ -283,41 +283,41 @@ export default function StudentDashboard({
       </div>
 
       {/* TIMELINE OF HISTORICAL ASSESSMENTS */}
-      <div className="p-6 bg-white dark:bg-slate-900/10 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm dark:shadow-none space-y-4">
-        <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
-          <Calendar className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400" /> Historical Assessment Record Timeline
+      <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
+          <Calendar className="h-4.5 w-4.5 text-blue-600" /> Historical Assessment Record Timeline
         </h3>
         
-        <div className="space-y-4 relative pl-6 border-l border-slate-200 dark:border-slate-800">
+        <div className="space-y-4 relative pl-6 border-l border-slate-200">
           {history.map((h, i) => (
             <div key={h.id} className="relative space-y-1">
               {/* Timeline marker node */}
-              <div className="absolute left-[-29px] top-1.5 h-3.5 w-3.5 rounded-full bg-white dark:bg-slate-950 border-2 border-blue-500 shadow-sm" />
+              <div className="absolute left-[-29px] top-1.5 h-3.5 w-3.5 rounded-full bg-white border-2 border-blue-500 shadow-sm" />
               
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Growth Score Achieved: <span className="text-blue-600 dark:text-blue-400 font-black">{h.growthIndex}%</span></p>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{new Date(h.date).toLocaleDateString()}</span>
+                <p className="text-xs font-bold text-slate-800">Growth Score Achieved: <span className="text-blue-600 font-black">{h.growthIndex}%</span></p>
+                <span className="text-[10px] text-slate-400 font-semibold">{new Date(h.date).toLocaleDateString()}</span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">{h.aiInsights.summary.slice(0, 180)}...</p>
+              <p className="text-[11px] text-slate-500 max-w-xl leading-relaxed">{h.aiInsights.summary.slice(0, 180)}...</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* RE-PRINTABLE CERTIFICATE PREVIEW CARD */}
-      <div className="p-6 bg-gradient-to-br from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-xl space-y-6">
+      <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-3xl border border-slate-200 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1.5">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
               <Award className="h-5 w-5 text-amber-500" /> Printable Certification Credential
             </h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+            <p className="text-xs text-slate-500 max-w-xl leading-relaxed">
               Upon finishing your personality and self-awareness index evaluation, you receive an official PersonaAI student credential documenting your developmental capabilities.
             </p>
           </div>
           <button
             onClick={() => setShowCertificate(!showCertificate)}
-            className="px-5 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider transition cursor-pointer shadow-sm dark:shadow-none"
+            className="px-5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 uppercase tracking-wider transition cursor-pointer shadow-sm"
           >
             {showCertificate ? 'Hide Certificate' : 'Preview Certificate'}
           </button>

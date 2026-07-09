@@ -116,15 +116,15 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
       {/* Visual background blob assets */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/5 dark:bg-blue-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/5 dark:bg-indigo-600/10 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
 
       {/* Main Login Frame */}
-      <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-md dark:shadow-2xl dark:shadow-black/60 border border-slate-200 dark:border-slate-800/80 z-10">
+      <div className="w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-md border border-slate-200 z-10">
         {/* Banner header */}
-        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-850 p-8 text-center relative border-b border-slate-100 dark:border-slate-800">
+        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 p-8 text-center relative border-b border-slate-100">
           <div className="absolute top-4 right-4 bg-white/10 px-3 py-1 rounded-full text-[11px] text-white/90 font-medium tracking-wide">
             v2.1 Enterprise SaaS
           </div>
@@ -132,19 +132,19 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
             <BookOpen className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">PersonaAI</h1>
-          <p className="text-slate-100 dark:text-slate-300 text-xs mt-1 max-w-md mx-auto">
+          <p className="text-slate-100 text-xs mt-1 max-w-md mx-auto">
             AI Student Personality & Psychological Growth Analytics Platform for Educational Institutions
           </p>
         </div>
 
         {/* Dynamic Navigation Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        <div className="flex border-b border-slate-200 bg-slate-50">
           <button
             onClick={() => { setActiveTab('student-entry'); setError(''); }}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'student-entry'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-white dark:bg-slate-900/10'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'text-blue-600 border-b-2 border-blue-500 bg-white'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <Award className="h-4 w-4" />
@@ -154,8 +154,8 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
             onClick={() => { setActiveTab('portal'); setError(''); }}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'portal'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-white dark:bg-slate-900/10'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'text-blue-600 border-b-2 border-blue-500 bg-white'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <Users2 className="h-4 w-4" />
@@ -166,8 +166,8 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
         {/* Errors view */}
         {error && (
           <div className="mx-6 mt-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-rose-700 dark:text-rose-300 font-medium leading-relaxed">{error}</p>
+            <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-rose-700 font-medium leading-relaxed">{error}</p>
           </div>
         )}
 
@@ -176,29 +176,29 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
             /* Student registration intake */
             <form onSubmit={handleStudentIntakeSubmit} className="space-y-4">
               <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 mb-4">
-                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                <p className="text-xs text-blue-700 leading-relaxed font-medium">
                   Welcome! Enter your details below to create your student record. Once completed, you will be launched into the 20-question psychological assessment wizard.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Full Name</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                    <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. Alex Mercer"
                       value={studentName}
                       onChange={(e) => setStudentName(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Age</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Age</label>
                   <input
                     type="number"
                     required
@@ -207,18 +207,18 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
                     placeholder="e.g. 16"
                     value={studentAge}
                     onChange={(e) => setStudentAge(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Gender</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Gender</label>
                   <select
                     value={studentGender}
                     onChange={(e) => setStudentGender(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -227,11 +227,11 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Grade / Class</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Grade / Class</label>
                   <select
                     value={studentGrade}
                     onChange={(e) => setStudentGrade(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   >
                     <option value="Grade 9">Grade 9</option>
                     <option value="Grade 10">Grade 10</option>
@@ -241,30 +241,30 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Section</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Section</label>
                   <input
                     type="text"
                     placeholder="A, B, C..."
                     value={studentSection}
                     onChange={(e) => setStudentSection(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Email Address (Optional)</label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email Address (Optional)</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                   <input
                     type="email"
                     placeholder="e.g. student@school.com"
                     value={studentEmail}
                     onChange={(e) => setStudentEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-450 mt-1 block font-medium">Used for direct login to view your results dashboard later.</span>
+                <span className="text-[10px] text-slate-500 mt-1 block font-medium">Used for direct login to view your results dashboard later.</span>
               </div>
 
               <button
@@ -280,31 +280,31 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
             /* Portal login for teachers/parents/admins */
             <form onSubmit={handlePortalLogin} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Portal Email Address</label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Portal Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                   <input
                     type="email"
                     required
                     placeholder="your@school.edu"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Secret Password</label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Secret Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Lock className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                   <input
                     type="password"
                     required
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
                   />
                 </div>
               </div>
@@ -319,34 +319,34 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
               </button>
 
               {/* Sandbox Quick Logins for rapid evaluation */}
-              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/85">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3 text-center">
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 text-center">
                   🔐 QUICK EVALUATION LOGIN SHORTCUTS
                 </p>
                 <div className="grid grid-cols-3 gap-2 text-[10px]">
                   <button
                     type="button"
                     onClick={() => fillQuickLogin('Admin')}
-                    className="p-2.5 bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/15 rounded-xl text-left transition-all cursor-pointer"
+                    className="p-2.5 bg-rose-50 border border-rose-200 hover:bg-rose-100/50 rounded-xl text-left transition-all cursor-pointer"
                   >
-                    <p className="font-bold text-rose-600 dark:text-rose-400">Admin</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-[9px] mt-0.5 truncate">admin@school.edu</p>
+                    <p className="font-bold text-rose-600">Admin</p>
+                    <p className="text-slate-500 text-[9px] mt-0.5 truncate">admin@school.edu</p>
                   </button>
                   <button
                     type="button"
                     onClick={() => fillQuickLogin('Teacher')}
-                    className="p-2.5 bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 hover:bg-amber-500/15 rounded-xl text-left transition-all cursor-pointer"
+                    className="p-2.5 bg-amber-50 border border-amber-200 hover:bg-amber-100/50 rounded-xl text-left transition-all cursor-pointer"
                   >
-                    <p className="font-bold text-amber-600 dark:text-amber-400">Teacher</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-[9px] mt-0.5 truncate">teacher@school.edu</p>
+                    <p className="font-bold text-amber-650">Teacher</p>
+                    <p className="text-slate-500 text-[9px] mt-0.5 truncate">teacher@school.edu</p>
                   </button>
                   <button
                     type="button"
                     onClick={() => fillQuickLogin('Parent')}
-                    className="p-2.5 bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-500/15 rounded-xl text-left transition-all cursor-pointer"
+                    className="p-2.5 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/50 rounded-xl text-left transition-all cursor-pointer"
                   >
-                    <p className="font-bold text-emerald-600 dark:text-emerald-400">Parent</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-[9px] mt-0.5 truncate">parent@school.edu</p>
+                    <p className="font-bold text-emerald-600">Parent</p>
+                    <p className="text-slate-500 text-[9px] mt-0.5 truncate">parent@school.edu</p>
                   </button>
                 </div>
               </div>
@@ -355,9 +355,9 @@ export default function Login({ onLoginSuccess, onStudentStart, onResetDatabase 
         </div>
       </div>
 
-      <div className="mt-6 text-slate-500 dark:text-slate-400 text-xs text-center leading-relaxed">
+      <div className="mt-6 text-slate-500 text-xs text-center leading-relaxed">
         <p>Built with enterprise-tier student psychological profiling models.</p>
-        <p className="text-[10px] mt-1 text-slate-400 dark:text-slate-500">Secure AES-256 JWT sessions & role-based school audits active.</p>
+        <p className="text-[10px] mt-1 text-slate-400">Secure AES-256 JWT sessions & role-based school audits active.</p>
       </div>
     </div>
   );

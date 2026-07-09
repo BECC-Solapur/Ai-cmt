@@ -101,7 +101,7 @@ export default function TeacherDashboard({
   const careerColors = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b'];
 
   // Check if dark class exists on document
-  const isDark = typeof document !== 'undefined' && document.querySelector('.dark') !== null;
+  const isDark = false;
 
   // Exports CSV data trigger
   const handleExportCSV = () => {
@@ -130,18 +130,18 @@ export default function TeacherDashboard({
   };
 
   return (
-    <div className="font-sans text-slate-800 dark:text-slate-200 p-6 space-y-6">
+    <div className="font-sans text-slate-800 p-6 space-y-6">
       
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="space-y-1">
-          <span className="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-black tracking-widest flex items-center gap-1">
+          <span className="text-[10px] text-blue-600 uppercase font-black tracking-widest flex items-center gap-1">
             <Sparkles className="h-3 w-3" /> EDUCATOR COHORT PORTAL
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Cohort Analytics: {teacherUser.name}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Institution: {teacherUser.school || 'Pinecrest Academy'} • Department: student psychological growth monitoring
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function TeacherDashboard({
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm dark:shadow-none"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-500" /> Export Excel/CSV
           </button>
@@ -165,9 +165,9 @@ export default function TeacherDashboard({
       </div>
 
       {/* Interactive Filters Grid */}
-      <div className="p-4 bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/50 rounded-2xl flex flex-wrap gap-4 items-center shadow-sm dark:shadow-none">
-        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase shrink-0">
-          <Filter className="h-4 w-4 text-blue-600 dark:text-blue-400" /> Filter Cohort:
+      <div className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-center shadow-sm">
+        <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase shrink-0">
+          <Filter className="h-4 w-4 text-blue-600" /> Filter Cohort:
         </div>
 
         {/* Class Filter */}
@@ -176,7 +176,7 @@ export default function TeacherDashboard({
           <select
             value={filterClass}
             onChange={(e) => setFilterClass(e.target.value)}
-            className="px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none shadow-xs"
+            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none shadow-xs"
           >
             <option value="All">All Grades</option>
             <option value="Grade 10">Grade 10</option>
@@ -190,7 +190,7 @@ export default function TeacherDashboard({
           <select
             value={filterSection}
             onChange={(e) => setFilterSection(e.target.value)}
-            className="px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none shadow-xs"
+            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none shadow-xs"
           >
             <option value="All">All Sections</option>
             <option value="A">Section A</option>
@@ -204,7 +204,7 @@ export default function TeacherDashboard({
           <select
             value={filterGender}
             onChange={(e) => setFilterGender(e.target.value)}
-            className="px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none shadow-xs"
+            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none shadow-xs"
           >
             <option value="All">All Genders</option>
             <option value="Male">Male</option>
@@ -218,7 +218,7 @@ export default function TeacherDashboard({
           <select
             value={filterAge}
             onChange={(e) => setFilterAge(e.target.value)}
-            className="px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none shadow-xs"
+            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none shadow-xs"
           >
             <option value="All">All Ages</option>
             <option value="15">15 Years</option>
@@ -231,91 +231,91 @@ export default function TeacherDashboard({
       {/* KPI Cards Matrix */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* TOTAL ENROLLED */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-blue-600 dark:text-blue-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-blue-600">
             <Users className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Cohort size</span>
-            <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{totalStudentsCount} Enrolled</span>
+            <span className="text-lg font-bold text-slate-800">{totalStudentsCount} Enrolled</span>
           </div>
         </div>
 
         {/* CLASS AVG INDEX */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 dark:text-white text-lg bg-slate-50 dark:bg-slate-950">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 text-lg bg-slate-50">
             {classAvgGrowthIndex}%
           </div>
           <div>
-            <span className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider block">Cohort Growth Avg</span>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">System Average</span>
+            <span className="text-[9px] font-black uppercase text-blue-600 tracking-wider block">Cohort Growth Avg</span>
+            <span className="text-xs font-bold text-slate-800">System Average</span>
           </div>
         </div>
 
         {/* CLASS EMOTIONAL HEALTH */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-emerald-600 dark:text-emerald-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-emerald-600">
             <Heart className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Emotional Health index</span>
-            <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{emotionalHealth}% Average</span>
+            <span className="text-lg font-bold text-slate-800">{emotionalHealth}% Average</span>
           </div>
         </div>
 
         {/* RISK STUDENTS */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className={`p-3 rounded-xl border ${studentsNeedingAttention.length > 0 ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500'}`}>
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className={`p-3 rounded-xl border ${studentsNeedingAttention.length > 0 ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
             <ShieldAlert className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Critical Risk Flag</span>
-            <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{studentsNeedingAttention.length} Students</span>
+            <span className="text-lg font-bold text-slate-800">{studentsNeedingAttention.length} Students</span>
           </div>
         </div>
       </div>
 
       {/* Interactive Mastery Heatmap */}
-      <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
-        <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
-          <TrendingUp className="h-4.5 w-4.5 text-blue-600 dark:text-blue-500" /> Cohort Category Mastery Heatmap
+      <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
+          <TrendingUp className="h-4.5 w-4.5 text-blue-600" /> Cohort Category Mastery Heatmap
         </h3>
         <p className="text-[11px] text-slate-500">
           Visualizes detailed category performance for individual students. Cells represent percentage scores mapped as green (High Mastery), yellow (Developing), or red (Requires Support).
         </p>
 
-        <div className="overflow-x-auto no-scrollbar rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="overflow-x-auto no-scrollbar rounded-xl border border-slate-200">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] font-bold">
+            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[9px] font-bold">
               <tr>
-                <th className="p-3.5 border-b border-slate-200 dark:border-slate-800">Student Name</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Self</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Conf</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Learn</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Motiv</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Emot</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Comm</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Lead</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Creat</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Decis</th>
-                <th className="p-2 border-b border-slate-200 dark:border-slate-800 text-center">Career</th>
-                <th className="p-3.5 border-b border-slate-200 dark:border-slate-800 text-center">Growth</th>
+                <th className="p-3.5 border-b border-slate-200">Student Name</th>
+                <th className="p-2 border-b border-slate-200 text-center">Self</th>
+                <th className="p-2 border-b border-slate-200 text-center">Conf</th>
+                <th className="p-2 border-b border-slate-200 text-center">Learn</th>
+                <th className="p-2 border-b border-slate-200 text-center">Motiv</th>
+                <th className="p-2 border-b border-slate-200 text-center">Emot</th>
+                <th className="p-2 border-b border-slate-200 text-center">Comm</th>
+                <th className="p-2 border-b border-slate-200 text-center">Lead</th>
+                <th className="p-2 border-b border-slate-200 text-center">Creat</th>
+                <th className="p-2 border-b border-slate-200 text-center">Decis</th>
+                <th className="p-2 border-b border-slate-200 text-center">Career</th>
+                <th className="p-3.5 border-b border-slate-200 text-center">Growth</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-150 dark:divide-slate-800/60 bg-white dark:bg-slate-900/10 text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-150 bg-white text-slate-700">
               {filteredAssessments.map(student => {
                 const s = student.scores;
                 const getHeatColor = (score: number) => {
-                  if (score >= 75) return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
-                  if (score >= 50) return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
-                  return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20';
+                  if (score >= 75) return 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20';
+                  if (score >= 50) return 'bg-amber-500/10 text-amber-600 border border-amber-500/20';
+                  return 'bg-rose-500/10 text-rose-600 border border-rose-500/20';
                 };
                 return (
-                  <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition">
-                    <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                  <tr key={student.id} className="hover:bg-slate-50 transition">
+                    <td className="p-3.5 font-bold text-slate-800">
                       <button 
                         onClick={() => onSelectStudent(student.studentId)}
-                        className="text-left hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition cursor-pointer"
+                        className="text-left hover:text-blue-600 hover:underline transition cursor-pointer"
                       >
                         {student.studentDetails.name}
                       </button>
@@ -330,7 +330,7 @@ export default function TeacherDashboard({
                     <td className="p-2 text-center"><span className={`px-2 py-1 rounded font-mono font-bold text-[10px] ${getHeatColor(s['Creativity'])}`}>{s['Creativity']}%</span></td>
                     <td className="p-2 text-center"><span className={`px-2 py-1 rounded font-mono font-bold text-[10px] ${getHeatColor(s['Decision Making'])}`}>{s['Decision Making']}%</span></td>
                     <td className="p-2 text-center"><span className={`px-2 py-1 rounded font-mono font-bold text-[10px] ${getHeatColor(s['Career Interest'])}`}>{s['Career Interest']}%</span></td>
-                    <td className="p-3.5 text-center font-bold text-blue-600 dark:text-blue-400 font-mono text-[11px]">{student.growthIndex}%</td>
+                    <td className="p-3.5 text-center font-bold text-blue-600 font-mono text-[11px]">{student.growthIndex}%</td>
                   </tr>
                 );
               })}
@@ -343,22 +343,22 @@ export default function TeacherDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* STUDENTS NEEDING ATTENTION */}
-        <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
-          <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
             <ShieldAlert className="h-4.5 w-4.5 text-rose-500" /> Critical Focus Group (Attention Needed)
           </h3>
           <p className="text-[11px] text-slate-500 leading-relaxed">Identified cohort students scoring below 60% Growth Index or exhibiting High stress risk baselines.</p>
           
           <div className="space-y-3">
             {studentsNeedingAttention.map(student => (
-              <div key={student.id} className="p-3 bg-rose-500/5 border border-rose-500/10 dark:border-rose-500/20 rounded-xl flex justify-between items-center text-xs">
+              <div key={student.id} className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl flex justify-between items-center text-xs">
                 <div>
-                  <p className="font-bold text-rose-600 dark:text-rose-300">{student.studentDetails.name}</p>
+                  <p className="font-bold text-rose-600">{student.studentDetails.name}</p>
                   <p className="text-[10px] text-slate-500">Stress Risk: {student.aiInsights.predictions.stressRisk} • Learn Risk: {student.aiInsights.predictions.learningRisk}</p>
                 </div>
                 <button
                   onClick={() => onSelectStudent(student.studentId)}
-                  className="px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg transition shadow-xs cursor-pointer"
+                  className="px-2.5 py-1.5 bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition shadow-xs cursor-pointer"
                 >
                   Analyze Profile
                 </button>
@@ -368,16 +368,16 @@ export default function TeacherDashboard({
         </div>
 
         {/* COHORT CAREER ALIGNMENT */}
-        <div className="lg:col-span-2 p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
-          <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight">Cohort Vocational Cluster Alignment</h3>
+        <div className="lg:col-span-2 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Cohort Vocational Cluster Alignment</h3>
           <p className="text-[11px] text-slate-500 leading-relaxed">Displays estimated distribution of current cohort students across key modern vocational areas.</p>
           
           <div className="h-[200px] w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={careerDistribution}>
-                <XAxis dataKey="name" stroke={isDark ? "#64748b" : "#475569"} fontSize={10} />
-                <YAxis stroke={isDark ? "#64748b" : "#475569"} fontSize={10} />
-                <Tooltip contentStyle={{ background: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', color: isDark ? '#f1f5f9' : '#0f172a' }} />
+                <XAxis dataKey="name" stroke="#475569" fontSize={10} />
+                <YAxis stroke="#475569" fontSize={10} />
+                <Tooltip contentStyle={{ background: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a' }} />
                 <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]}>
                   {careerDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={careerColors[index % careerColors.length]} />
@@ -391,42 +391,42 @@ export default function TeacherDashboard({
       </div>
 
       {/* COHORT RANKINGS LIST */}
-      <div className="p-6 bg-white dark:bg-slate-900/10 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm dark:shadow-none space-y-4">
-        <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight">Cohort Leaderboard Ranking</h3>
+      <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Cohort Leaderboard Ranking</h3>
         <p className="text-[11px] text-slate-500">Detailed student listings filtered according to overall development indices.</p>
 
-        <div className="overflow-x-auto no-scrollbar rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="overflow-x-auto no-scrollbar rounded-xl border border-slate-200">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] font-bold">
+            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[9px] font-bold">
               <tr>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800 text-center">Rank</th>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800">Student Name</th>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800">Personality Type</th>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800">Anxiety Profile</th>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800 text-center">Growth Index</th>
-                <th className="p-3 border-b border-slate-200 dark:border-slate-800 text-center">Action</th>
+                <th className="p-3 border-b border-slate-200 text-center">Rank</th>
+                <th className="p-3 border-b border-slate-200">Student Name</th>
+                <th className="p-3 border-b border-slate-200">Personality Type</th>
+                <th className="p-3 border-b border-slate-200">Anxiety Profile</th>
+                <th className="p-3 border-b border-slate-200 text-center">Growth Index</th>
+                <th className="p-3 border-b border-slate-200 text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-150 dark:divide-slate-800/60 bg-white dark:bg-slate-900/10 text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-150 bg-white text-slate-700">
               {studentRankings.map((student, idx) => (
-                <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition">
-                  <td className="p-3 text-center font-bold font-mono text-slate-500 dark:text-slate-400">#{idx + 1}</td>
-                  <td className="p-3 font-bold text-slate-800 dark:text-slate-200">{student.studentDetails.name}</td>
-                  <td className="p-3 text-slate-500 dark:text-slate-400 font-medium">{student.aiInsights.personalityType}</td>
+                <tr key={student.id} className="hover:bg-slate-50 transition">
+                  <td className="p-3 text-center font-bold font-mono text-slate-500">#{idx + 1}</td>
+                  <td className="p-3 font-bold text-slate-800">{student.studentDetails.name}</td>
+                  <td className="p-3 text-slate-500 font-medium">{student.aiInsights.personalityType}</td>
                   <td className="p-3">
                     <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                      student.aiInsights.riskIndicator === 'High' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' :
-                      student.aiInsights.riskIndicator === 'Medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
-                      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      student.aiInsights.riskIndicator === 'High' ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20' :
+                      student.aiInsights.riskIndicator === 'Medium' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' :
+                      'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
                     }`}>
                       {student.aiInsights.riskIndicator} Risk
                     </span>
                   </td>
-                  <td className="p-3 text-center font-bold text-blue-600 dark:text-blue-400 font-mono text-[11px]">{student.growthIndex}%</td>
+                  <td className="p-3 text-center font-bold text-blue-600 font-mono text-[11px]">{student.growthIndex}%</td>
                   <td className="p-3 text-center">
                     <button
                       onClick={() => onSelectStudent(student.studentId)}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold transition flex items-center gap-0.5 mx-auto cursor-pointer"
+                      className="text-blue-600 hover:text-blue-700 font-bold transition flex items-center gap-0.5 mx-auto cursor-pointer"
                     >
                       View Report <ArrowUpRight className="h-3 w-3" />
                     </button>

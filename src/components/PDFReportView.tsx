@@ -40,13 +40,13 @@ export default function PDFReportView({ assessment, onClose }: PDFReportViewProp
 
   // Pages array to simulate structured 15-page report
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 p-6 font-sans">
       
       {/* Upper Control Bar - Hidden in Print */}
-      <div className="no-print max-w-[850px] mx-auto mb-6 flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800">
+      <div className="no-print max-w-[850px] mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
         <button
           onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-xl transition"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" /> Return to Dashboard
         </button>
@@ -55,7 +55,7 @@ export default function PDFReportView({ assessment, onClose }: PDFReportViewProp
           <span className="text-xs text-slate-500 font-semibold">Native Print Layout Engaged</span>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-accent-600 hover:brightness-110 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-brand-500/10 transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow shadow-blue-500/10 transition cursor-pointer"
           >
             <Printer className="h-4 w-4" /> Download/Print 15-Page PDF
           </button>

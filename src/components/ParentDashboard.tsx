@@ -18,10 +18,6 @@ import {
   RotateCcw,
   Plus
 } from 'lucide-react';
-import { 
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend 
-} from 'recharts';
 import { StudentAssessment, User } from '../types';
 import { CATEGORY_LABELS } from '../assessmentEngine';
 
@@ -108,13 +104,13 @@ export default function ParentDashboard({
   if (!activeAssessment) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] font-sans p-6 text-center">
-        <div className="max-w-md p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-2xl">
-          <div className="h-14 w-14 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-blue-600 dark:text-blue-500 mx-auto shadow-sm">
+        <div className="max-w-md p-8 bg-white rounded-3xl border border-slate-200 space-y-6 shadow-sm">
+          <div className="h-14 w-14 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-blue-600 mx-auto shadow-sm">
             <UserSquare className="h-6 w-6" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">No Child Records Logged</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">No Child Records Logged</h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
               Your child has not completed their 20-Question psychometric intake. Please coordinate with school counselors or let them take the questionnaire directly.
             </p>
           </div>
@@ -140,18 +136,18 @@ export default function ParentDashboard({
   });
 
   return (
-    <div className="font-sans text-slate-800 dark:text-slate-200 p-6 space-y-6">
+    <div className="font-sans text-slate-800 p-6 space-y-6">
       
       {/* Upper Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="space-y-1">
-          <span className="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-black tracking-widest flex items-center gap-1">
+          <span className="text-[10px] text-blue-600 uppercase font-black tracking-widest flex items-center gap-1">
             <Sparkles className="h-3 w-3" /> PARENT CASE CONTROL PANEL
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Child Progress Summary: {activeAssessment.studentDetails.name}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Assigned Guardian: {parentUser.name} • Class: {activeAssessment.studentDetails.grade} • Pinecrest Academy
           </p>
         </div>
@@ -167,46 +163,46 @@ export default function ParentDashboard({
       {/* KPI Cards Matrix */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* GROWTH INDEX */}
-        <div className="p-5 bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 dark:text-white text-lg bg-slate-50 dark:bg-slate-950">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full border-2 border-blue-500 flex items-center justify-center font-black text-slate-800 text-lg bg-slate-50">
             {activeAssessment.growthIndex}%
           </div>
           <div>
-            <span className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider block">Child Growth Score</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Excellent Development</span>
+            <span className="text-[9px] font-black uppercase text-blue-600 tracking-wider block">Child Growth Score</span>
+            <span className="text-xs font-bold text-slate-700">Excellent Development</span>
           </div>
         </div>
 
         {/* STUDY HABITS INDEX */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-blue-600 dark:text-blue-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-blue-600">
             <Clock className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Study Habits Index</span>
-            <span className="text-sm font-bold text-slate-850 dark:text-slate-200">{scores['Learning Style']}% Mastery</span>
+            <span className="text-sm font-bold text-slate-850">{scores['Learning Style']}% Mastery</span>
           </div>
         </div>
 
         {/* EMOTIONAL STABILITY */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-emerald-600 dark:text-emerald-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-emerald-600">
             <Heart className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Emotional Maturity</span>
-            <span className="text-sm font-bold text-slate-850 dark:text-slate-200">{scores['Emotional Regulation']}% Index</span>
+            <span className="text-sm font-bold text-slate-850">{scores['Emotional Regulation']}% Index</span>
           </div>
         </div>
 
         {/* DECISION MAKING */}
-        <div className="p-5 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800/60 flex items-center gap-4 shadow-sm dark:shadow-none">
-          <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-indigo-600 dark:text-indigo-400">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-indigo-600">
             <Award className="h-5 w-5" />
           </div>
           <div>
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Decision Making index</span>
-            <span className="text-sm font-bold text-slate-850 dark:text-slate-200">{scores['Decision Making']}% Mastery</span>
+            <span className="text-sm font-bold text-slate-850">{scores['Decision Making']}% Mastery</span>
           </div>
         </div>
       </div>
@@ -215,17 +211,17 @@ export default function ParentDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* INTERACTIVE ROUTINE & STUDY TIME BUILDER */}
-        <div className="p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-5">
+        <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
-              <Clock className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400" /> Parenting Routine Builder & Timer
+            <h3 className="text-sm font-bold text-slate-850 uppercase tracking-tight flex items-center gap-2">
+              <Clock className="h-4.5 w-4.5 text-blue-600" /> Parenting Routine Builder & Timer
             </h3>
             <p className="text-[11px] text-slate-500">Coordinate and track active study times and behavioral sessions at home.</p>
           </div>
 
           {/* Interactive Clock Timer */}
-          <div className="p-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center space-y-3">
-            <span className="text-3xl font-mono font-black text-blue-600 dark:text-blue-400 tracking-wider">{formatTime(timerSeconds)}</span>
+          <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center space-y-3">
+            <span className="text-3xl font-mono font-black text-blue-600 tracking-wider">{formatTime(timerSeconds)}</span>
             <div className="flex gap-2">
               <button
                 onClick={toggleTimer}
@@ -236,7 +232,7 @@ export default function ParentDashboard({
               </button>
               <button
                 onClick={resetTimer}
-                className="p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-750 dark:hover:text-slate-200 rounded-lg transition shadow-xs cursor-pointer"
+                className="p-1.5 bg-white border border-slate-200 text-slate-500 hover:text-slate-750 rounded-lg transition shadow-xs cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>
@@ -248,7 +244,7 @@ export default function ParentDashboard({
             <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Routine Actions:</p>
             <div className="space-y-2 text-xs">
               {routines.map((rt, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/50 rounded-xl text-slate-700 dark:text-slate-300">
+                <div key={idx} className="flex items-center gap-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700">
                   <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
                   <span className="font-medium">{rt}</span>
                 </div>
@@ -262,7 +258,7 @@ export default function ParentDashboard({
                 placeholder="Add custom routine..."
                 value={newRoutineText}
                 onChange={(e) => setNewRoutineText(e.target.value)}
-                className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
+                className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-xs"
               />
               <button
                 type="submit"
@@ -275,9 +271,9 @@ export default function ParentDashboard({
         </div>
 
         {/* COMPARISON CHANGE AXIS */}
-        <div className="lg:col-span-2 p-6 bg-white dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none space-y-4">
-          <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
-            <TrendingUp className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400" /> Category Score Comparison & Progression
+        <div className="lg:col-span-2 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-850 uppercase tracking-tight flex items-center gap-2">
+            <TrendingUp className="h-4.5 w-4.5 text-blue-600" /> Category Score Comparison & Progression
           </h3>
           <p className="text-[11px] text-slate-500 leading-relaxed">
             Compares your child's current development metrics with their previous baseline values. Visualizes areas of steady gains or those needing reinforcement.
@@ -287,27 +283,27 @@ export default function ParentDashboard({
             {compareData.map((cd, idx) => (
               <div key={idx} className="space-y-1">
                 <div className="flex justify-between items-center text-xs font-semibold">
-                  <span className="text-slate-700 dark:text-slate-300 font-bold">{cd.label}</span>
+                  <span className="text-slate-700 font-bold">{cd.label}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-slate-500 font-mono text-[11px]">Prev: {cd.previous}%</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-mono font-bold">Curr: {cd.current}%</span>
+                    <span className="text-slate-800 font-mono font-bold">Curr: {cd.current}%</span>
                     {previousAssessment && (
                       <span className={`px-1.5 py-0.5 font-mono font-extrabold rounded text-[9px] ${
-                        cd.diff >= 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25'
+                        cd.diff >= 0 ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/25' : 'bg-rose-500/10 text-rose-600 border border-rose-500/25'
                       }`}>
                         {cd.diff >= 0 ? `+${cd.diff}` : cd.diff}%
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 p-0.5 relative">
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200 p-0.5 relative">
                   <div 
-                    className="bg-blue-600 dark:bg-blue-50 h-full rounded-full transition-all" 
+                    className="bg-blue-600 h-full rounded-full transition-all" 
                     style={{ width: `${cd.current}%` }}
                   />
                   {previousAssessment && (
                     <div 
-                      className="absolute top-0.5 bottom-0.5 w-1 bg-slate-400 dark:bg-slate-500"
+                      className="absolute top-0.5 bottom-0.5 w-1 bg-slate-400"
                       style={{ left: `${cd.previous}%` }}
                     />
                   )}
@@ -320,21 +316,21 @@ export default function ParentDashboard({
       </div>
 
       {/* PARENT SPECIFIC ADVICE */}
-      <div className="p-6 bg-white dark:bg-slate-900/10 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm dark:shadow-none space-y-4">
-        <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
+      <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-850 uppercase tracking-tight flex items-center gap-2">
           <Heart className="h-4.5 w-4.5 text-emerald-500" /> Parent Home Guidance Matrix
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           {ai.recommendations.forParent.map((rec, i) => (
-            <div key={i} className="p-5 bg-slate-50 dark:bg-slate-900/40 border border-slate-150 dark:border-slate-800/50 rounded-2xl space-y-2 shadow-xs">
+            <div key={i} className="p-5 bg-slate-50 border border-slate-150 rounded-2xl space-y-2 shadow-xs">
               <div className="flex justify-between items-center">
-                <span className="font-extrabold text-slate-800 dark:text-slate-200 text-sm">{rec.recommendation}</span>
-                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold rounded uppercase tracking-wider text-[9px] border border-emerald-500/20">{rec.priority} Priority</span>
+                <span className="font-extrabold text-slate-800 text-sm">{rec.recommendation}</span>
+                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 font-bold rounded uppercase tracking-wider text-[9px] border border-emerald-500/20">{rec.priority} Priority</span>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium"><span className="font-bold text-slate-700 dark:text-slate-300">Why it helps:</span> {rec.reason}</p>
-              <p className="text-slate-500 dark:text-slate-400 font-medium"><span className="font-bold text-slate-700 dark:text-slate-300">Success Milestone:</span> {rec.expectedOutcome}</p>
-              <p className="text-slate-400 dark:text-slate-500 font-bold font-mono text-[9px] pt-1">TIMELINE SCHEDULE: {rec.timeline}</p>
+              <p className="text-slate-500 font-medium"><span className="font-bold text-slate-700">Why it helps:</span> {rec.reason}</p>
+              <p className="text-slate-500 font-medium"><span className="font-bold text-slate-700">Success Milestone:</span> {rec.expectedOutcome}</p>
+              <p className="text-slate-400 font-bold font-mono text-[9px] pt-1">TIMELINE SCHEDULE: {rec.timeline}</p>
             </div>
           ))}
         </div>

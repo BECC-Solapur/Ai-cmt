@@ -9,6 +9,7 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 import { calculateScores, calculateGrowthIndex, generateLocalPsychometrics, generateGeminiPsychometrics } from './src/assessmentEngine';
 import { StudentAssessment, User, AuditLog } from './src/types';
 
@@ -39,7 +40,7 @@ if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY') {
   console.log('No valid GEMINI_API_KEY environment variable found. Falling back to local scoring engine.');
 }
 
-// Ensure database folders exist
+// Ensure database folders exist for JSON fallback
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -70,9 +71,6 @@ function getInitialData() {
     scoresOverride: { [cat: string]: number },
     date: string
   ): StudentAssessment => {
-    // Generate mock answers matching scoresOverride
-    // Percentage score S = ((Raw - 2) / 6) * 100 -> Raw = Math.round((S * 6) / 100) + 2
-    // We split Raw into two values (e.g. half/half) each between 1 and 4.
     const answers = Object.entries(scoresOverride).flatMap(([cat, score]) => {
       const raw = Math.round((score * 6) / 100) + 2;
       const first = Math.min(4, Math.max(1, Math.round(raw / 2)));
@@ -200,13 +198,13 @@ function getInitialData() {
   };
 }
 
-// Load or seed DB
+// Load local fallback data
 let dbData = getInitialData();
 if (fs.existsSync(DB_PATH)) {
   try {
     const raw = fs.readFileSync(DB_PATH, 'utf-8');
     dbData = JSON.parse(raw);
-    console.log(`Loaded ${dbData.users?.length || 0} users and ${dbData.assessments?.length || 0} assessments from db.json.`);
+    console.log(`Loaded fallback cache with ${dbData.users?.length || 0} users and ${dbData.assessments?.length || 0} assessments.`);
   } catch (err) {
     console.error('Failed to parse database file. Resetting to defaults.', err);
     saveDB();
@@ -216,47 +214,374 @@ if (fs.existsSync(DB_PATH)) {
 }
 
 function saveDB() {
-  fs.writeFileSync(DB_PATH, JSON.stringify(dbData, null, 2), 'utf-8');
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(dbData, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Failed to save local db.json', err);
+  }
 }
 
-// Express middle-wares
-app.use(express.json());
+// ==========================================
+// REAL MYSQL DATABASE CONNECTOR ENGINE
+// ==========================================
+let pool: mysql.Pool | null = null;
+let dbStatus = {
+  connected: false,
+  type: 'Local JSON (Fallback)',
+  host: '',
+  database: '',
+  error: ''
+};
 
-// API Endpoints
+const mysqlHost = process.env.MYSQL_HOST;
+const mysqlUser = process.env.MYSQL_USER;
+const mysqlPassword = process.env.MYSQL_PASSWORD;
+const mysqlDatabase = process.env.MYSQL_DATABASE || 'persona_ai';
+const mysqlPort = parseInt(process.env.MYSQL_PORT || '3306', 10);
 
-// Reset Database API
-app.get('/api/reset-db', (req, res) => {
+async function initMySQL() {
+  if (mysqlHost) {
+    try {
+      console.log(`Attempting to connect to real MySQL database at ${mysqlHost}:${mysqlPort}...`);
+      pool = mysql.createPool({
+        host: mysqlHost,
+        user: mysqlUser,
+        password: mysqlPassword,
+        database: mysqlDatabase,
+        port: mysqlPort,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        ssl: process.env.MYSQL_SSL === 'true' ? {} : undefined
+      });
+
+      // Confirm connectivity
+      const conn = await pool.getConnection();
+      console.log('MySQL Database Connected successfully!');
+      conn.release();
+
+      dbStatus = {
+        connected: true,
+        type: 'MySQL Live',
+        host: mysqlHost,
+        database: mysqlDatabase,
+        error: ''
+      };
+
+      // Exec migrations to compile relational tables
+      await runMigrations();
+      // Auto-seed cohort data if empty
+      await seedMySQLIfEmpty();
+    } catch (err: any) {
+      console.error('MySQL database pool connection failed, falling back to local file db.json:', err.message);
+      pool = null;
+      dbStatus = {
+        connected: false,
+        type: 'Local JSON (Fallback)',
+        host: mysqlHost || '',
+        database: mysqlDatabase,
+        error: err.message
+      };
+    }
+  } else {
+    console.log('No MYSQL_HOST environment variable set. Server operating via local db.json fallback engine.');
+  }
+}
+
+async function runMigrations() {
+  if (!pool) return;
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(255) PRIMARY KEY,
+        email VARCHAR(255) UNIQUE,
+        name VARCHAR(255),
+        role VARCHAR(50),
+        school VARCHAR(255),
+        className VARCHAR(50),
+        section VARCHAR(50),
+        age INT,
+        gender VARCHAR(50),
+        childId VARCHAR(255),
+        createdAt VARCHAR(255)
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS assessments (
+        id VARCHAR(255) PRIMARY KEY,
+        studentId VARCHAR(255),
+        studentDetails TEXT,
+        answers TEXT,
+        scores TEXT,
+        growthIndex INT,
+        date VARCHAR(100),
+        aiInsights TEXT
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id VARCHAR(255) PRIMARY KEY,
+        userId VARCHAR(255),
+        userName VARCHAR(255),
+        userRole VARCHAR(50),
+        action VARCHAR(255),
+        details TEXT,
+        timestamp VARCHAR(255)
+      )
+    `);
+
+    console.log('Relational tables compiled successfully.');
+  } catch (err) {
+    console.error('Failed to compile migrations on MySQL:', err);
+  }
+}
+
+async function seedMySQLIfEmpty() {
+  if (!pool) return;
+  try {
+    const [rows]: any = await pool.query('SELECT COUNT(*) as count FROM users');
+    if (rows[0].count === 0) {
+      console.log('Seed cohort index is empty. Injecting pre-seeded student dataset...');
+      const seed = getInitialData();
+      
+      for (const u of seed.users) {
+        await pool.query(
+          'INSERT INTO users (id, email, name, role, school, className, section, age, gender, childId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [u.id, u.email, u.name, u.role, u.school || 'Pinecrest Academy', u.className || null, u.section || null, u.age || null, u.gender || null, u.childId || null, u.createdAt]
+        );
+      }
+
+      for (const a of seed.assessments) {
+        await pool.query(
+          'INSERT INTO assessments (id, studentId, studentDetails, answers, scores, growthIndex, date, aiInsights) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            a.id,
+            a.studentId,
+            JSON.stringify(a.studentDetails),
+            JSON.stringify(a.answers),
+            JSON.stringify(a.scores),
+            a.growthIndex,
+            a.date,
+            JSON.stringify(a.aiInsights)
+          ]
+        );
+      }
+
+      for (const log of seed.auditLogs) {
+        await pool.query(
+          'INSERT INTO audit_logs (id, userId, userName, userRole, action, details, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [log.id, log.userId, log.userName, log.userRole, log.action, log.details, log.timestamp]
+        );
+      }
+      console.log('Pre-seeded student dataset injected successfully.');
+    }
+  } catch (err) {
+    console.error('Failed to seed MySQL tables:', err);
+  }
+}
+
+// ==========================================
+// DYNAMIC DATA LAYER ADAPTERS
+// ==========================================
+async function getUsers(): Promise<User[]> {
+  if (pool) {
+    try {
+      const [rows]: any = await pool.query('SELECT * FROM users');
+      return rows.map((r: any) => ({
+        ...r,
+        age: r.age || undefined,
+        className: r.className || undefined,
+        section: r.section || undefined,
+        childId: r.childId || undefined
+      }));
+    } catch (err) {
+      console.error('MySQL getUsers fail, using JSON fallback:', err);
+    }
+  }
+  return dbData.users;
+}
+
+async function getAssessments(): Promise<StudentAssessment[]> {
+  if (pool) {
+    try {
+      const [rows]: any = await pool.query('SELECT * FROM assessments');
+      return rows.map((r: any) => ({
+        id: r.id,
+        studentId: r.studentId,
+        studentDetails: JSON.parse(r.studentDetails),
+        answers: JSON.parse(r.answers),
+        scores: JSON.parse(r.scores),
+        growthIndex: r.growthIndex,
+        date: r.date,
+        aiInsights: JSON.parse(r.aiInsights)
+      }));
+    } catch (err) {
+      console.error('MySQL getAssessments fail, using JSON fallback:', err);
+    }
+  }
+  return dbData.assessments;
+}
+
+async function getAuditLogs(): Promise<AuditLog[]> {
+  if (pool) {
+    try {
+      const [rows]: any = await pool.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
+      return rows;
+    } catch (err) {
+      console.error('MySQL getAuditLogs fail, using JSON fallback:', err);
+    }
+  }
+  return dbData.auditLogs;
+}
+
+async function addUser(u: User) {
+  if (pool) {
+    try {
+      await pool.query(
+        'INSERT INTO users (id, email, name, role, school, className, section, age, gender, childId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [u.id, u.email, u.name, u.role, u.school || 'Pinecrest Academy', u.className || null, u.section || null, u.age || null, u.gender || null, u.childId || null, u.createdAt]
+      );
+      return;
+    } catch (err) {
+      console.error('MySQL addUser fail:', err);
+    }
+  }
+  dbData.users.push(u);
+  saveDB();
+}
+
+async function deleteUser(userId: string) {
+  if (pool) {
+    try {
+      await pool.query('DELETE FROM users WHERE id = ?', [userId]);
+      return;
+    } catch (err) {
+      console.error('MySQL deleteUser fail:', err);
+    }
+  }
+  dbData.users = dbData.users.filter(u => u.id !== userId);
+  saveDB();
+}
+
+async function addAssessment(a: StudentAssessment) {
+  if (pool) {
+    try {
+      await pool.query(
+        'INSERT INTO assessments (id, studentId, studentDetails, answers, scores, growthIndex, date, aiInsights) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          a.id,
+          a.studentId,
+          JSON.stringify(a.studentDetails),
+          JSON.stringify(a.answers),
+          JSON.stringify(a.scores),
+          a.growthIndex,
+          a.date,
+          JSON.stringify(a.aiInsights)
+        ]
+      );
+      return;
+    } catch (err) {
+      console.error('MySQL addAssessment fail:', err);
+    }
+  }
+  dbData.assessments.push(a);
+  saveDB();
+}
+
+async function addAuditLog(log: AuditLog) {
+  if (pool) {
+    try {
+      await pool.query(
+        'INSERT INTO audit_logs (id, userId, userName, userRole, action, details, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [log.id, log.userId, log.userName, log.userRole, log.action, log.details, log.timestamp]
+      );
+      return;
+    } catch (err) {
+      console.error('MySQL addAuditLog fail:', err);
+    }
+  }
+  dbData.auditLogs.unshift(log);
+  saveDB();
+}
+
+async function resetDatabase() {
+  if (pool) {
+    try {
+      await pool.query('DROP TABLE IF EXISTS users');
+      await pool.query('DROP TABLE IF EXISTS assessments');
+      await pool.query('DROP TABLE IF EXISTS audit_logs');
+      await runMigrations();
+      await seedMySQLIfEmpty();
+      return;
+    } catch (err) {
+      console.error('MySQL resetDatabase fail:', err);
+    }
+  }
   dbData = getInitialData();
   saveDB();
-  res.json({ status: 'ok', message: 'Database reset to default enterprise seed cohort.' });
+}
+
+// ==========================================
+// EXPRESS SERVER & MIDDLEWARE
+// ==========================================
+app.use(express.json());
+
+// 1. Database Connection Status Endpoint
+app.get('/api/db/status', (req, res) => {
+  res.json(dbStatus);
 });
 
-// Authentication API (Simulated secure authentication with simple structures)
-app.post('/api/auth/login', (req, res) => {
+// 2. Fetch Session Endpoint
+app.get('/api/auth/me', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthenticated' });
+  }
+  const token = authHeader.split(' ')[1];
+  const rolePart = token.replace('mock-jwt-token-for-', '');
+  
+  // Format role string correctly
+  const allUsers = await getUsers();
+  const matchedUser = allUsers.find(u => u.role.toLowerCase() === rolePart.toLowerCase() || u.id === rolePart);
+  if (matchedUser) {
+    res.json({ user: matchedUser });
+  } else {
+    // Return first user matching token role or default back to teacher
+    const firstMatchedRole = allUsers.find(u => u.role.toLowerCase() === rolePart.toLowerCase());
+    if (firstMatchedRole) {
+      res.json({ user: firstMatchedRole });
+    } else {
+      res.status(401).json({ error: 'Session expired' });
+    }
+  }
+});
+
+// 3. User Login
+app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  // Handle default developer quick accounts
+  const allUsers = await getUsers();
   let targetUser: User | undefined;
   
   if (email === 'admin@school.edu' && password === 'admin') {
-    targetUser = dbData.users.find(u => u.id === 'user_admin_1');
+    targetUser = allUsers.find(u => u.id === 'user_admin_1');
   } else if (email === 'teacher@school.edu' && password === 'teacher') {
-    targetUser = dbData.users.find(u => u.id === 'user_teacher_1');
+    targetUser = allUsers.find(u => u.id === 'user_teacher_1');
   } else if (email === 'counselor@school.edu' && password === 'counselor') {
-    targetUser = dbData.users.find(u => u.id === 'user_counselor_1');
+    targetUser = allUsers.find(u => u.id === 'user_counselor_1');
   } else if (email === 'parent@school.edu' && password === 'parent') {
-    targetUser = dbData.users.find(u => u.id === 'user_parent_1');
+    targetUser = allUsers.find(u => u.id === 'user_parent_1');
   } else {
-    // Dynamic look up
-    targetUser = dbData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    targetUser = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
   if (targetUser) {
-    // Log action
-    dbData.auditLogs.unshift({
+    await addAuditLog({
       id: `log_${Date.now()}`,
       userId: targetUser.id,
       userName: targetUser.name,
@@ -265,7 +590,6 @@ app.post('/api/auth/login', (req, res) => {
       details: `Logged in from IP: Simulated Secure JWT Auth Session.`,
       timestamp: new Date().toISOString()
     });
-    saveDB();
 
     return res.json({
       token: `mock-jwt-token-for-${targetUser.role.toLowerCase()}`,
@@ -276,14 +600,13 @@ app.post('/api/auth/login', (req, res) => {
   return res.status(401).json({ error: 'Invalid school login credentials.' });
 });
 
-// Student assessment direct login / register on form completion
-app.post('/api/auth/register-student', (req, res) => {
+// 4. Student intake register
+app.post('/api/auth/register-student', async (req, res) => {
   const { name, age, gender, grade, section, school, email } = req.body;
-  
   const studentEmail = email || `${name.toLowerCase().replace(/\s+/g, '')}@student.edu`;
   
-  // Find or create user
-  let existingUser = dbData.users.find(u => u.email === studentEmail);
+  const allUsers = await getUsers();
+  let existingUser = allUsers.find(u => u.email === studentEmail);
   if (!existingUser) {
     const newStudent: User = {
       id: `student_${Date.now()}`,
@@ -297,11 +620,10 @@ app.post('/api/auth/register-student', (req, res) => {
       gender,
       createdAt: new Date().toISOString()
     };
-    dbData.users.push(newStudent);
+    await addUser(newStudent);
     existingUser = newStudent;
     
-    // Log audit
-    dbData.auditLogs.unshift({
+    await addAuditLog({
       id: `log_${Date.now()}`,
       userId: newStudent.id,
       userName: newStudent.name,
@@ -310,35 +632,32 @@ app.post('/api/auth/register-student', (req, res) => {
       details: `Registered during assessment intake: Class ${grade}-${section}.`,
       timestamp: new Date().toISOString()
     });
-    saveDB();
   }
   
-  res.json({ token: 'mock-jwt-student', user: existingUser });
+  res.json({ token: `mock-jwt-token-for-${existingUser.id}`, user: existingUser });
 });
 
-// Admin API to create Teachers and Parents
-app.post('/api/users/create', (req, res) => {
+// 5. Admin API to create Users
+app.post('/api/admin/create-user', async (req, res) => {
   const { email, name, role, school, childEmail, className, section } = req.body;
   
   if (!email || !name || !role) {
     return res.status(400).json({ error: 'Email, Name, and Role are required.' });
   }
 
-  // Check if user exists
-  if (dbData.users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+  const allUsers = await getUsers();
+  if (allUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
     return res.status(400).json({ error: 'User with this email already exists.' });
   }
 
   let childId = undefined;
   if (role === 'Parent' && childEmail) {
-    // Try to find the child ID
-    const childUser = dbData.users.find(u => u.email.toLowerCase() === childEmail.toLowerCase() && u.role === 'Student');
+    const childUser = allUsers.find(u => u.email.toLowerCase() === childEmail.toLowerCase() && u.role === 'Student');
     if (childUser) {
       childId = childUser.id;
     } else {
-      // Create a dummy placeholder student first so they are linked
       const newChildId = `student_linked_${Date.now()}`;
-      dbData.users.push({
+      await addUser({
         id: newChildId,
         email: childEmail,
         name: `${name}'s Child`,
@@ -364,10 +683,9 @@ app.post('/api/users/create', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  dbData.users.push(newUser);
+  await addUser(newUser);
   
-  // Log audit
-  dbData.auditLogs.unshift({
+  await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'user_admin_1',
     userName: 'Principal Evelyn Vance',
@@ -377,16 +695,100 @@ app.post('/api/users/create', (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  saveDB();
   res.json({ success: true, user: newUser });
 });
 
-// Retrieve User List
-app.get('/api/users', (req, res) => {
-  res.json(dbData.users);
+// Map legacy route for creation compatibility
+app.post('/api/users/create', async (req, res) => {
+  const { email, name, role, school, childEmail, className, section } = req.body;
+  
+  if (!email || !name || !role) {
+    return res.status(400).json({ error: 'Email, Name, and Role are required.' });
+  }
+
+  const allUsers = await getUsers();
+  if (allUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+    return res.status(400).json({ error: 'User with this email already exists.' });
+  }
+
+  let childId = undefined;
+  if (role === 'Parent' && childEmail) {
+    const childUser = allUsers.find(u => u.email.toLowerCase() === childEmail.toLowerCase() && u.role === 'Student');
+    if (childUser) {
+      childId = childUser.id;
+    } else {
+      const newChildId = `student_linked_${Date.now()}`;
+      await addUser({
+        id: newChildId,
+        email: childEmail,
+        name: `${name}'s Child`,
+        role: 'Student',
+        school: school || 'Pinecrest Academy',
+        className: className || 'Grade 10',
+        section: section || 'A',
+        createdAt: new Date().toISOString()
+      });
+      childId = newChildId;
+    }
+  }
+
+  const newUser: User = {
+    id: `user_${role.toLowerCase()}_${Date.now()}`,
+    email,
+    name,
+    role,
+    school: school || 'Pinecrest Academy',
+    childId,
+    className,
+    section,
+    createdAt: new Date().toISOString()
+  };
+
+  await addUser(newUser);
+  res.json({ success: true, user: newUser });
 });
 
-// Submit MCQ Assessment and generate AI Insights
+// 6. Delete User profiles
+app.delete('/api/admin/delete-user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const allUsers = await getUsers();
+  const target = allUsers.find(u => u.id === userId);
+  
+  if (!target) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  if (target.role === 'Admin') {
+    return res.status(400).json({ error: 'Admin account cannot be deleted' });
+  }
+
+  await deleteUser(userId);
+
+  await addAuditLog({
+    id: `log_${Date.now()}`,
+    userId: 'user_admin_1',
+    userName: 'Principal Evelyn Vance',
+    userRole: 'Admin',
+    action: `User Deleted`,
+    details: `Deleted user profile: ${target.name} (${target.email}).`,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ success: true });
+});
+
+// 7. Reset database profiles
+app.post('/api/admin/reset-database', async (req, res) => {
+  await resetDatabase();
+  res.json({ status: 'ok', message: 'Database reset to default enterprise seed cohort.' });
+});
+
+// 8. Retrieve User Lists (supports both wrapper and raw arrays for extreme robustness)
+app.get('/api/users', async (req, res) => {
+  const allUsers = await getUsers();
+  res.json({ users: allUsers });
+});
+
+// 9. Submit psychometric assessments
 app.post('/api/assessments/submit', async (req, res) => {
   const { studentId, answers, studentDetails } = req.body;
 
@@ -396,20 +798,17 @@ app.post('/api/assessments/submit', async (req, res) => {
 
   console.log(`Calculating assessment scores for ${studentDetails.name} (ID: ${studentId})`);
   
-  // 1. Calculate percentage scores
   const scores = calculateScores(answers);
   const growthIndex = calculateGrowthIndex(scores);
 
-  // 2. Compile questionnaire context for Gemini to read
   const answersTextSummary = answers.map((ans, idx) => {
     return `Q${idx+1}: Category: ${ans.category}, Score: ${ans.score}/4`;
   }).join('\n');
 
   let aiInsights;
 
-  // 3. Trigger Server-side AI or fall back
   if (ai) {
-    console.log(`Invoking Gemini 3.5 Flash Model for student: ${studentDetails.name}...`);
+    console.log(`Invoking Gemini for student: ${studentDetails.name}...`);
     try {
       aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
     } catch (err) {
@@ -421,7 +820,6 @@ app.post('/api/assessments/submit', async (req, res) => {
     aiInsights = generateLocalPsychometrics(scores, studentDetails);
   }
 
-  // 4. Store result
   const assessmentId = `assess_${Date.now()}`;
   const newAssessment: StudentAssessment = {
     id: assessmentId,
@@ -441,10 +839,9 @@ app.post('/api/assessments/submit', async (req, res) => {
     aiInsights
   };
 
-  dbData.assessments.push(newAssessment);
+  await addAssessment(newAssessment);
 
-  // Log action
-  dbData.auditLogs.unshift({
+  await addAuditLog({
     id: `log_${Date.now()}`,
     userId: studentId,
     userName: studentDetails.name,
@@ -454,43 +851,37 @@ app.post('/api/assessments/submit', async (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  saveDB();
-
   res.json({ success: true, assessment: newAssessment });
 });
 
-// Retrieve Assessment List (with Role based access check)
-app.get('/api/assessments', (req, res) => {
+// 10. Retrieve Assessments list
+app.get('/api/assessments', async (req, res) => {
   const { role, userId, childId } = req.query;
 
-  let filtered = [...dbData.assessments];
+  const allAssessments = await getAssessments();
+  let filtered = [...allAssessments];
 
   if (role === 'Student' && userId) {
     filtered = filtered.filter(a => a.studentId === userId);
   } else if (role === 'Parent' && childId) {
     filtered = filtered.filter(a => a.studentId === childId);
-  } else if (role === 'Teacher') {
-    // Teachers see assessments from their school (usually all preseeded)
-    // Filters can be handled on client side, let's keep all available for teachers
   }
 
-  // Sort by date descending
   filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  res.json(filtered);
+  res.json({ assessments: filtered });
 });
 
-// Retrieve Audit Logs for activity timelines
-app.get('/api/audit-logs', (req, res) => {
-  res.json(dbData.auditLogs);
+// 11. Retrieve Audit Logs list
+app.get('/api/audit-logs', async (req, res) => {
+  const logs = await getAuditLogs();
+  res.json(logs);
 });
 
-// Simulates real-time e-mail parent / teacher notifications
-app.post('/api/notify/email', (req, res) => {
+// 12. Trigger Email alerts
+app.post('/api/notify/email', async (req, res) => {
   const { studentName, recipientEmail, subject, type } = req.body;
   
-  // Log simulated notification
-  dbData.auditLogs.unshift({
+  await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'system_notify',
     userName: 'AI Automations Engine',
@@ -500,12 +891,14 @@ app.post('/api/notify/email', (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  saveDB();
   res.json({ success: true, message: `Notification email queued for ${recipientEmail}.` });
 });
 
-// Vite server connection setup for development and production build handling
+// Vite connection setup
 async function startServer() {
+  // Initialize MySQL system if configurations are set in environment
+  await initMySQL();
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -513,7 +906,6 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // Production static builds
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
@@ -522,7 +914,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`AI Student Personality & Growth Platform server running on http://0.0.0.0:${PORT}`);
+    console.log(`AI Student Personality & Growth Platform server running on port ${PORT}`);
   });
 }
 

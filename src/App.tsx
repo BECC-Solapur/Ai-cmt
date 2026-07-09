@@ -23,7 +23,21 @@ export default function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [user, setUser] = useState<User | null>(null);
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+
+  // Database status indicator state
+  const [dbStatus, setDbStatus] = useState({ connected: false, type: 'Local JSON (Fallback)' });
+
+  useEffect(() => {
+    fetch('/api/db/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.type) {
+          setDbStatus({ connected: data.connected, type: data.type });
+        }
+      })
+      .catch(err => console.error('Database status error:', err));
+  }, []);
 
   // Application Data States
   const [assessments, setAssessments] = useState<StudentAssessment[]>([]);
@@ -259,10 +273,10 @@ export default function App() {
   // Loading Screen
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 text-center font-sans">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans">
         <div className="space-y-4">
-          <div className="h-12 w-12 rounded-full border-4 border-brand-500/20 border-t-brand-500 animate-spin mx-auto" />
-          <h2 className="text-sm font-bold text-slate-300 tracking-wider uppercase">Loading PersonaAI Suite...</h2>
+          <div className="h-12 w-12 rounded-full border-4 border-blue-500/25 border-t-blue-500 animate-spin mx-auto" />
+          <h2 className="text-sm font-bold text-slate-500 tracking-wider uppercase">Loading PersonaAI Suite...</h2>
         </div>
       </div>
     );
@@ -309,7 +323,7 @@ export default function App() {
   const childUserAccount = users.find(u => user?.role === 'Parent' ? u.name === 'Danny Kim' || u.name === 'Alex Mercer' : false) || null;
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'} font-sans`}>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       
       {/* Dynamic Sidebar navigation */}
       <Sidebar 
@@ -326,16 +340,14 @@ export default function App() {
       {/* Main Panel Content Frame */}
       <main className="pl-64 min-h-screen pb-12">
         {/* Top Mini Header */}
-        <div className={`no-print border-b px-8 py-3.5 flex items-center justify-between text-[11px] font-semibold ${
-          darkMode ? 'border-slate-800/60 bg-slate-950/40 text-slate-400' : 'border-slate-200/80 bg-white text-slate-500 shadow-xs'
-        }`}>
+        <div className="no-print border-b px-8 py-3.5 flex items-center justify-between text-[11px] font-semibold border-slate-200/80 bg-white text-slate-500 shadow-xs">
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Secure Enterprise Cluster Synced</span>
+            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
+            <span>Secure Enterprise Cluster Synced • DB: <strong className="text-slate-700 font-bold">{dbStatus.type}</strong></span>
           </div>
           <div className="flex items-center gap-3">
             <span>Server Latency: ~12ms</span>
-            <span className="text-slate-700">|</span>
+            <span className="text-slate-300">|</span>
             <span>Gemini v3.5 Engines Activated</span>
           </div>
         </div>
