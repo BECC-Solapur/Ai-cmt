@@ -243,11 +243,26 @@ let dbStatus = {
   error: ''
 };
 
-const mysqlHost = process.env.MYSQL_HOST;
-const mysqlUser = process.env.MYSQL_USER;
-const mysqlPassword = process.env.MYSQL_PASSWORD;
-const mysqlDatabase = process.env.MYSQL_DATABASE || 'persona_ai';
-const mysqlPort = parseInt(process.env.MYSQL_PORT || '3306', 10);
+let mysqlHost = process.env.MYSQL_HOST;
+let mysqlUser = process.env.MYSQL_USER;
+let mysqlPassword = process.env.MYSQL_PASSWORD;
+let mysqlDatabase = process.env.MYSQL_DATABASE || 'persona_ai';
+let mysqlPort = parseInt(process.env.MYSQL_PORT || '3306', 10);
+
+const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+if (dbUrl && dbUrl.startsWith('mysql://')) {
+  try {
+    const url = new URL(dbUrl);
+    mysqlHost = url.hostname;
+    mysqlUser = url.username;
+    mysqlPassword = decodeURIComponent(url.password);
+    mysqlDatabase = url.pathname.substring(1) || 'persona_ai';
+    mysqlPort = parseInt(url.port || '3306', 10);
+    console.log(`Parsed database connection URL: host=${mysqlHost}, database=${mysqlDatabase}, port=${mysqlPort}`);
+  } catch (err: any) {
+    console.error('Failed to parse database connection URL:', err.message);
+  }
+}
 
 async function initMySQL() {
   if (mysqlHost) {
