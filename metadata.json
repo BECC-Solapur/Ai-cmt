@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "PersonaAI",
+  "description": "AI Student Personality & Psychological Growth Analytics Platform",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
