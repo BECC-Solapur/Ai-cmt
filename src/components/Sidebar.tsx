@@ -64,6 +64,7 @@ export default function Sidebar({
       case 'Admin':
         return [
           { id: 'dashboard', label: 'System Analytics', icon: LayoutDashboard },
+          { id: 'students_list', label: 'Students', icon: Users },
           { id: 'users_manager', label: 'User Manager', icon: Users },
           { id: 'audit_logs', label: 'System Logs', icon: ShieldCheck },
         ];

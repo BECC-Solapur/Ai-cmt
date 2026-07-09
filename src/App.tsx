@@ -460,31 +460,41 @@ export default function App() {
                 onResetDatabase={handleResetSandboxDB}
                 onSelectStudent={handleSelectCohortStudentReport}
                 dbStatus={dbStatus}
+                activeTab="dashboard"
+              />
+            ) : currentTab === 'students_list' ? (
+              <AdminDashboard
+                users={users}
+                assessments={assessments}
+                onAddUser={handleCreateUser}
+                onDeleteUser={handleDeleteUser}
+                onResetDatabase={handleResetSandboxDB}
+                onSelectStudent={handleSelectCohortStudentReport}
+                dbStatus={dbStatus}
+                activeTab="students_list"
               />
             ) : currentTab === 'users_manager' ? (
-              <div className="p-8">
-                <AdminDashboard
-                  users={users}
-                  assessments={assessments}
-                  onAddUser={handleCreateUser}
-                  onDeleteUser={handleDeleteUser}
-                  onResetDatabase={handleResetSandboxDB}
-                  onSelectStudent={handleSelectCohortStudentReport}
-                  dbStatus={dbStatus}
-                />
-              </div>
+              <AdminDashboard
+                users={users}
+                assessments={assessments}
+                onAddUser={handleCreateUser}
+                onDeleteUser={handleDeleteUser}
+                onResetDatabase={handleResetSandboxDB}
+                onSelectStudent={handleSelectCohortStudentReport}
+                dbStatus={dbStatus}
+                activeTab="users_manager"
+              />
             ) : currentTab === 'audit_logs' ? (
-              <div className="p-8">
-                <AdminDashboard
-                  users={users}
-                  assessments={assessments}
-                  onAddUser={handleCreateUser}
-                  onDeleteUser={handleDeleteUser}
-                  onResetDatabase={handleResetSandboxDB}
-                  onSelectStudent={handleSelectCohortStudentReport}
-                  dbStatus={dbStatus}
-                />
-              </div>
+              <AdminDashboard
+                users={users}
+                assessments={assessments}
+                onAddUser={handleCreateUser}
+                onDeleteUser={handleDeleteUser}
+                onResetDatabase={handleResetSandboxDB}
+                onSelectStudent={handleSelectCohortStudentReport}
+                dbStatus={dbStatus}
+                activeTab="audit_logs"
+              />
             ) : (
               <div className="p-8 text-center text-xs text-slate-400">
                 Administrative block.
