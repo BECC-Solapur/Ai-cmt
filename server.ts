@@ -991,9 +991,10 @@ app.post('/api/assessments/regenerate-ai', async (req, res) => {
       return res.status(500).json({ error: `Gemini AI service error: ${err.message}` });
     }
   } else {
-    console.log('No Gemini key, simulating perfect live AI evaluation.');
-    aiInsights = generateLocalPsychometrics(scores, studentDetails);
-    isSimulated = true;
+    console.error('Failed to regenerate: GEMINI_API_KEY is not configured.');
+    return res.status(400).json({
+      error: 'GEMINI_API_KEY is not set in your environment variables. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY, and restart the server to enable live Gemini AI psychometric evaluation.'
+    });
   }
 
   // Update assessment in-memory and database
