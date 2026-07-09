@@ -267,19 +267,24 @@ if (dbUrl && dbUrl.startsWith('mysql://')) {
 async function initMySQL() {
   if (mysqlHost) {
     try {
-      console.log(`Ensuring database '${mysqlDatabase}' exists on ${mysqlHost}...`);
-      // Connect without a specific database first to make sure we can create it
-      const tempConn = await mysql.createConnection({
-        host: mysqlHost,
-        user: mysqlUser,
-        password: mysqlPassword,
-        port: mysqlPort,
-        ssl: process.env.MYSQL_SSL === 'true' ? {} : undefined
-      });
-      await tempConn.query(`CREATE DATABASE IF NOT EXISTS \`${mysqlDatabase}\``);
-      await tempConn.end();
+      try {
+        console.log(`Attempting to ensure database '${mysqlDatabase}' exists on ${mysqlHost}...`);
+        // Connect without a specific database first to make sure we can create it
+        const tempConn = await mysql.createConnection({
+          host: mysqlHost,
+          user: mysqlUser,
+          password: mysqlPassword,
+          port: mysqlPort,
+          ssl: process.env.MYSQL_SSL === 'true' ? {} : undefined
+        });
+        await tempConn.query(`CREATE DATABASE IF NOT EXISTS \`${mysqlDatabase}\``);
+        await tempConn.end();
+        console.log(`Database '${mysqlDatabase}' verified/created.`);
+      } catch (dbErr: any) {
+        console.log(`Note: Could not run CREATE DATABASE command directly (this is normal for limited-privilege cloud databases like Railway: ${dbErr.message}). Proceeding directly with connection pool...`);
+      }
 
-      console.log(`Database '${mysqlDatabase}' verified/created. Creating connection pool...`);
+      console.log(`Creating connection pool for database '${mysqlDatabase}'...`);
       pool = mysql.createPool({
         host: mysqlHost,
         user: mysqlUser,
