@@ -408,20 +408,21 @@ interface AIInsights {
 
 Ensure all JSON properties are valid and strictly match the types. Do not include markdown wraps besides valid JSON.`;
 
-  try {
-    const response = await geminiClient.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json'
-      }
-    });
+  const response = await geminiClient.models.generateContent({
+    model: 'gemini-3.5-flash',
+    contents: prompt,
+    config: {
+      systemInstruction,
+      responseMimeType: 'application/json'
+    }
+  });
 
-    const parsed = JSON.parse(response.text.trim());
+  const text = response.text.trim();
+  try {
+    const parsed = JSON.parse(text);
     return parsed as AIInsights;
-  } catch (error) {
-    console.error('Gemini Assessment Generation failed, falling back to local psychometrics:', error);
-    return generateLocalPsychometrics(scores, studentDetails);
+  } catch (parseError: any) {
+    console.error('Failed to parse Gemini JSON output:', text);
+    throw new Error(`AI generated invalid structured data: ${parseError.message}`);
   }
 }

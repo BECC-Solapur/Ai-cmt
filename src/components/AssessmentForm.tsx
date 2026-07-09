@@ -28,6 +28,8 @@ export default function AssessmentForm({ studentUser, onSubmitSuccess, onCancel 
   const [answers, setAnswers] = useState<{ [qId: number]: number }>({});
   const [submitting, setSubmitting] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0); // For dynamic premium loading text
+  const [showFailurePopup, setShowFailurePopup] = useState(false);
+  const [popupErrorDetails, setPopupErrorDetails] = useState('');
 
   const currentQuestion = assessmentQuestions[currentIndex];
   const isLastQuestion = currentIndex === assessmentQuestions.length - 1;
@@ -115,9 +117,11 @@ export default function AssessmentForm({ studentUser, onSubmitSuccess, onCancel 
 
         // Trigger parent callback to show dashboard
         onSubmitSuccess(data.assessment);
-      } catch (err) {
-        alert('Server connection error. Saving results locally inside browser sandbox.');
+      } catch (err: any) {
         console.error(err);
+        setPopupErrorDetails(err.message || 'Server connection error. Please try again.');
+        setShowFailurePopup(true);
+        setSubmitting(false);
       }
     };
 
@@ -323,6 +327,29 @@ export default function AssessmentForm({ studentUser, onSubmitSuccess, onCancel 
           </button>
         )}
       </footer>
+
+      {/* Failure Popup Modal */}
+      {showFailurePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in no-print">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 text-center transform scale-100 transition-all">
+            <div className="mx-auto h-12 w-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 border border-rose-100">
+              <ShieldAlert className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">AI Generation Failed</h3>
+              <p className="text-xs text-rose-600 font-medium bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 leading-relaxed">
+                {popupErrorDetails || "We encountered an error during AI synthesis. Please check your network and try again."}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowFailurePopup(false)}
+              className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+            >
+              Close and Retry
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

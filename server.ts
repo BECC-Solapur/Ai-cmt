@@ -912,13 +912,17 @@ app.post('/api/assessments/submit', async (req, res) => {
     console.log(`Invoking Gemini for student: ${studentDetails.name}...`);
     try {
       aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
-    } catch (err) {
-      console.error('Failed Gemini invocation, running fallback analysis engine.', err);
-      aiInsights = generateLocalPsychometrics(scores, studentDetails);
+    } catch (err: any) {
+      console.error('Failed Gemini invocation:', err);
+      return res.status(500).json({
+        error: `Gemini AI service error: ${err.message || err}. Please try again later.`
+      });
     }
   } else {
-    console.log('Running deterministic psychological analysis rules (No Gemini key available).');
-    aiInsights = generateLocalPsychometrics(scores, studentDetails);
+    console.error('Failed to generate with AI: GEMINI_API_KEY is not configured.');
+    return res.status(400).json({
+      error: 'GEMINI_API_KEY is not configured in your environment. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY, and restart the server to enable live Gemini AI psychometric evaluation.'
+    });
   }
 
   const assessmentId = `assess_${Date.now()}`;
