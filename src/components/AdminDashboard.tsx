@@ -557,12 +557,28 @@ export default function AdminDashboard({
                         <td className="p-3.5 text-center font-bold text-blue-600 font-mono text-[11px]">{a.growthIndex}%</td>
                         <td className="p-3.5 text-slate-500 font-medium">{new Date(a.date).toLocaleDateString()}</td>
                         <td className="p-3.5 text-center">
-                          <button
-                            onClick={() => onSelectStudent(a.studentId)}
-                            className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 font-bold transition rounded-lg text-[10px] cursor-pointer inline-flex items-center gap-1 shadow-xs border border-blue-100"
-                          >
-                            <FileText className="h-3 w-3" /> View 15-Page Dossier
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => onSelectStudent(a.studentId)}
+                              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 font-bold transition rounded-lg text-[10px] cursor-pointer inline-flex items-center gap-1 shadow-xs border border-blue-100"
+                            >
+                              <FileText className="h-3 w-3" /> View 15-Page Dossier
+                            </button>
+                            {onDeleteStudent && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Are you sure you want to delete student '${a.studentDetails.name}' and all associated assessments?`)) {
+                                    onDeleteStudent(a.studentId);
+                                  }
+                                }}
+                                className="p-1.5 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Dossier"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

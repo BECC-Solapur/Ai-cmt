@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Printer, 
   ArrowLeft, 
@@ -12,7 +12,9 @@ import {
   Activity, 
   CheckCircle,
   FileSpreadsheet,
-  Signature
+  Signature,
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import { StudentAssessment } from '../types';
 import { CATEGORY_LABELS } from '../assessmentEngine';
@@ -20,13 +22,46 @@ import { CATEGORY_LABELS } from '../assessmentEngine';
 interface PDFReportViewProps {
   assessment: StudentAssessment;
   onClose: () => void;
+  onAssessmentUpdated?: (updated: StudentAssessment) => void;
 }
 
-export default function PDFReportView({ assessment, onClose }: PDFReportViewProps) {
+export default function PDFReportView({ assessment, onClose, onAssessmentUpdated }: PDFReportViewProps) {
   const printContainerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleRegenerate = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const response = await fetch('/api/assessments/regenerate-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ assessmentId: assessment.id })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (onAssessmentUpdated) {
+          onAssessmentUpdated(data.assessment);
+        }
+      } else {
+        const errData = await response.json();
+        setErrorMsg(errData.error || 'Failed to regenerate report with Gemini AI.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Network error while requesting live Gemini evaluation.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const name = assessment.studentDetails.name;
@@ -38,27 +73,80 @@ export default function PDFReportView({ assessment, onClose }: PDFReportViewProp
     day: 'numeric'
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md space-y-6 animate-fade-in">
+          {/* Pulsing Brain / Sparkles Visual */}
+          <div className="relative h-20 w-20 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-indigo-500/20 animate-ping" />
+            <div className="relative h-20 w-20 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/30">
+              <Sparkles className="h-10 w-10 text-blue-200 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block">
+              Gemini AI Engaged
+            </span>
+            <h2 className="text-2xl font-black tracking-tight text-white">Synthesizing Psychometrics...</h2>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+              Gemini is evaluating 20 cognitive and behavioral dimensions to build a customized, 15-page student development dossier. This includes action plans for parents, teachers, and counselors.
+            </p>
+          </div>
+
+          {/* Loading status bar */}
+          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full animate-pulse w-3/4" />
+          </div>
+
+          <p className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">
+            Compiling weighted indices • Please wait...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Pages array to simulate structured 15-page report
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 p-6 font-sans">
       
       {/* Upper Control Bar - Hidden in Print */}
-      <div className="no-print max-w-[850px] mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-        >
-          <ArrowLeft className="h-4 w-4" /> Return to Dashboard
-        </button>
-
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-semibold">Native Print Layout Engaged</span>
+      <div className="no-print max-w-[850px] mx-auto mb-6 flex flex-col gap-3">
+        {errorMsg && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center justify-between font-medium">
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold">Notice:</span> {errorMsg}
+            </div>
+            <button onClick={() => setErrorMsg('')} className="text-rose-400 hover:text-rose-700 font-bold px-2">
+              ✕
+            </button>
+          </div>
+        )}
+        <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow shadow-blue-500/10 transition cursor-pointer"
+            onClick={onClose}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
           >
-            <Printer className="h-4 w-4" /> Download/Print 15-Page PDF
+            <ArrowLeft className="h-4 w-4" /> Return to Dashboard
           </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 text-indigo-700 hover:text-indigo-800 text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
+              title="Re-analyze with Live Gemini AI model to generate 100% personalized psychological paragraphs"
+            >
+              <Sparkles className="h-4 w-4 text-indigo-500" /> Regenerate with Gemini AI
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow shadow-blue-500/10 transition cursor-pointer"
+            >
+              <Printer className="h-4 w-4" /> Download/Print 15-Page PDF
+            </button>
+          </div>
         </div>
       </div>
 

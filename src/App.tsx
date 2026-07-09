@@ -345,12 +345,18 @@ export default function App() {
     );
   }
 
+  const handleAssessmentUpdated = (updated: StudentAssessment) => {
+    setAssessments(prev => prev.map(a => a.id === updated.id ? updated : a));
+    setActiveReport(updated);
+  };
+
   // Detailed 15-Page dossier print-preview mode overlay
   if (activeReport) {
     return (
       <PDFReportView
         assessment={activeReport}
         onClose={() => setActiveReport(null)}
+        onAssessmentUpdated={handleAssessmentUpdated}
       />
     );
   }

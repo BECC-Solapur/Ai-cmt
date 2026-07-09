@@ -49,15 +49,20 @@ if (!fs.existsSync(DATA_DIR)) {
 const DB_PATH = path.join(DATA_DIR, 'db.json');
 
 // Initialize database with premium pre-seeded data
-function getInitialData() {
+function getInitialData(seedStudents: boolean = false) {
   const initialUsers: User[] = [
     { id: 'user_admin_1', email: 'admin@school.edu', name: 'Principal Evelyn Vance', role: 'Admin', school: 'Pinecrest Academy', createdAt: '2026-01-10T10:00:00Z' },
     { id: 'user_teacher_1', email: 'teacher@school.edu', name: 'Dr. Sarah Jenkins', role: 'Teacher', school: 'Pinecrest Academy', className: 'Grade 10', section: 'A', createdAt: '2026-01-11T11:00:00Z' },
     { id: 'user_counselor_1', email: 'counselor@school.edu', name: 'Marcus Brody, Counselor', role: 'Teacher', school: 'Pinecrest Academy', className: 'Grade 11', section: 'B', createdAt: '2026-01-12T12:00:00Z' },
-    { id: 'user_parent_1', email: 'parent@school.edu', name: 'Robert Mercer', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_alex', createdAt: '2026-01-15T09:00:00Z' },
-    { id: 'user_parent_2', email: 'parent_chloe@school.edu', name: 'William Zhao', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_chloe', createdAt: '2026-01-15T14:00:00Z' },
-    { id: 'user_parent_3', email: 'parent_daniel@school.edu', name: 'Jenny Kim', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_daniel', createdAt: '2026-01-20T10:00:00Z' },
   ];
+
+  if (seedStudents) {
+    initialUsers.push(
+      { id: 'user_parent_1', email: 'parent@school.edu', name: 'Robert Mercer', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_alex', createdAt: '2026-01-15T09:00:00Z' },
+      { id: 'user_parent_2', email: 'parent_chloe@school.edu', name: 'William Zhao', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_chloe', createdAt: '2026-01-15T14:00:00Z' },
+      { id: 'user_parent_3', email: 'parent_daniel@school.edu', name: 'Jenny Kim', role: 'Parent', school: 'Pinecrest Academy', childId: 'student_daniel', createdAt: '2026-01-20T10:00:00Z' }
+    );
+  }
 
   // Helper to generate mock assessment
   const generateMockAssessment = (
@@ -97,7 +102,7 @@ function getInitialData() {
     };
   };
 
-  const initialAssessments: StudentAssessment[] = [
+  const initialAssessments: StudentAssessment[] = seedStudents ? [
     // Alex Mercer: historical progression to show Monthly Growth Line Charts!
     generateMockAssessment(
       'assess_alex_1', 'student_alex', 'Alex Mercer', 16, 'Male', 'Grade 10', 'A',
@@ -183,13 +188,18 @@ function getInitialData() {
       },
       '2026-06-08'
     ),
-  ];
+  ] : [];
 
   const initialAuditLogs: AuditLog[] = [
-    { id: 'log_1', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'Database Initialized', details: 'Enterprise student analytics database successfully pre-seeded with 6 month cohort trend data.', timestamp: '2026-07-08T10:00:00Z' },
+    { id: 'log_1', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'Database Initialized', details: seedStudents ? 'Enterprise student analytics database successfully pre-seeded with 6 month cohort trend data.' : 'Clean sandbox database initialized successfully.', timestamp: '2026-07-08T10:00:00Z' },
     { id: 'log_2', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'User Created', details: 'Created Teacher account for Dr. Sarah Jenkins (Grade 10, Sec A).', timestamp: '2026-07-08T10:05:00Z' },
-    { id: 'log_3', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'User Created', details: 'Created Parent account for Robert Mercer (Alex Mercer).', timestamp: '2026-07-08T10:10:00Z' }
   ];
+
+  if (seedStudents) {
+    initialAuditLogs.push(
+      { id: 'log_3', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'User Created', details: 'Created Parent account for Robert Mercer (Alex Mercer).', timestamp: '2026-07-08T10:10:00Z' }
+    );
+  }
 
   return {
     users: initialUsers,
@@ -199,7 +209,7 @@ function getInitialData() {
 }
 
 // Load local fallback data
-let dbData = getInitialData();
+let dbData = getInitialData(false);
 if (fs.existsSync(DB_PATH)) {
   try {
     const raw = fs.readFileSync(DB_PATH, 'utf-8');
@@ -531,7 +541,7 @@ async function resetDatabase() {
       console.error('MySQL resetDatabase fail:', err);
     }
   }
-  dbData = getInitialData();
+  dbData = getInitialData(true);
   saveDB();
 }
 
@@ -943,6 +953,81 @@ app.post('/api/assessments/submit', async (req, res) => {
   });
 
   res.json({ success: true, assessment: newAssessment });
+});
+
+// 9.5 Regenerate assessment report with Gemini AI
+app.post('/api/assessments/regenerate-ai', async (req, res) => {
+  const { assessmentId } = req.body;
+  if (!assessmentId) {
+    return res.status(400).json({ error: 'Assessment ID is required.' });
+  }
+
+  const allAssessments = await getAssessments();
+  const assessment = allAssessments.find(a => a.id === assessmentId);
+  if (!assessment) {
+    return res.status(404).json({ error: 'Assessment report not found.' });
+  }
+
+  const studentDetails = {
+    name: assessment.studentDetails.name,
+    age: assessment.studentDetails.age,
+    gender: assessment.studentDetails.gender,
+    grade: assessment.studentDetails.grade || 'Grade 10'
+  };
+  const scores = assessment.scores;
+  const answersTextSummary = assessment.answers.map((ans, idx) => {
+    return `Q${idx+1}: Category: ${ans.category}, Score: ${ans.score}/4`;
+  }).join('\n');
+
+  let aiInsights;
+  let isSimulated = false;
+
+  if (ai) {
+    console.log(`Regenerating with Gemini AI for student: ${studentDetails.name}...`);
+    try {
+      aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
+    } catch (err: any) {
+      console.error('Failed to regenerate with Gemini AI:', err);
+      return res.status(500).json({ error: `Gemini AI service error: ${err.message}` });
+    }
+  } else {
+    console.log('No Gemini key, simulating perfect live AI evaluation.');
+    aiInsights = generateLocalPsychometrics(scores, studentDetails);
+    isSimulated = true;
+  }
+
+  // Update assessment in-memory and database
+  assessment.aiInsights = aiInsights;
+
+  if (pool) {
+    try {
+      await pool.query(
+        'UPDATE assessments SET aiInsights = ? WHERE id = ?',
+        [JSON.stringify(aiInsights), assessmentId]
+      );
+    } catch (err) {
+      console.error('MySQL update assessment failed:', err);
+    }
+  } else {
+    // Save to local dbData structure
+    const idx = dbData.assessments.findIndex(a => a.id === assessmentId);
+    if (idx !== -1) {
+      dbData.assessments[idx].aiInsights = aiInsights;
+    }
+    saveDB();
+  }
+
+  await addAuditLog({
+    id: `log_${Date.now()}`,
+    userId: 'system_ai',
+    userName: 'Gemini AI Advisor',
+    userRole: 'Admin',
+    action: 'Dossier Re-evaluated',
+    details: `Successfully completed a 15-page AI psychometric re-evaluation for ${studentDetails.name} ${isSimulated ? '(Simulated/Fallback)' : '(Live Gemini v3.5)'}.`,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ success: true, assessment });
 });
 
 // 10. Retrieve Assessments list
