@@ -14,7 +14,8 @@ import {
   Terminal, 
   Sparkles,
   BookOpen,
-  ArrowRight
+  ArrowRight,
+  FileText
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer 
@@ -27,6 +28,7 @@ interface AdminDashboardProps {
   onAddUser: (userPayload: any) => Promise<boolean>;
   onDeleteUser: (userId: string) => void;
   onResetDatabase: () => void;
+  onSelectStudent: (studentId: string) => void;
 }
 
 export default function AdminDashboard({
@@ -34,7 +36,8 @@ export default function AdminDashboard({
   assessments,
   onAddUser,
   onDeleteUser,
-  onResetDatabase
+  onResetDatabase,
+  onSelectStudent
 }: AdminDashboardProps) {
   // Add User Form states
   const [userName, setUserName] = useState('');
@@ -43,6 +46,8 @@ export default function AdminDashboard({
   const [userRole, setUserRole] = useState<UserRole>('Teacher');
   const [userClass, setUserClass] = useState('Grade 10');
   const [userSection, setUserSection] = useState('A');
+  const [childEmail, setChildEmail] = useState('');
+  const [customChildEmail, setCustomChildEmail] = useState('');
   const [submittingUser, setSubmittingUser] = useState(false);
   const [userFormMsg, setUserFormMsg] = useState({ type: '', text: '' });
 
@@ -64,6 +69,10 @@ export default function AdminDashboard({
     setSubmittingUser(true);
 
     try {
+      const finalChildEmail = userRole === 'Parent'
+        ? (childEmail === 'custom' ? customChildEmail.trim() : childEmail)
+        : undefined;
+
       const payload = {
         name: userName.trim(),
         email: userEmail.trim().toLowerCase(),
@@ -71,6 +80,7 @@ export default function AdminDashboard({
         role: userRole,
         className: userRole === 'Teacher' ? userClass : undefined,
         section: userRole === 'Teacher' ? userSection : undefined,
+        childEmail: finalChildEmail || undefined,
         school: 'Pinecrest Academy'
       };
 
@@ -87,6 +97,8 @@ export default function AdminDashboard({
         setUserName('');
         setUserEmail('');
         setUserPassword('');
+        setChildEmail('');
+        setCustomChildEmail('');
       } else {
         setUserFormMsg({ type: 'error', text: 'Account creation failed. User might exist.' });
       }
@@ -302,6 +314,38 @@ export default function AdminDashboard({
               </div>
             )}
 
+            {userRole === 'Parent' && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Link to Student (Child Account)</label>
+                  <select
+                    value={childEmail}
+                    onChange={(e) => setChildEmail(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-medium text-slate-750 focus:outline-none focus:border-blue-500 shadow-xs"
+                  >
+                    <option value="">-- Select student --</option>
+                    {users.filter(u => u.role === 'Student').map(s => (
+                      <option key={s.id} value={s.email}>{s.name} ({s.email})</option>
+                    ))}
+                    <option value="custom">-- Enter custom email --</option>
+                  </select>
+                </div>
+                {(childEmail === 'custom' || users.filter(u => u.role === 'Student').length === 0) && (
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Custom Child Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="child@school.edu"
+                      value={customChildEmail}
+                      onChange={(e) => setCustomChildEmail(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 shadow-xs"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={submittingUser}
@@ -354,6 +398,64 @@ export default function AdminDashboard({
           </div>
         </div>
 
+      </div>
+
+      {/* COMPLETED STUDENT ASSESSMENT DOSSIERS SECTION */}
+      <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-850 uppercase tracking-tight flex items-center gap-2">
+          <BookOpen className="h-4.5 w-4.5 text-blue-600" /> Completed Student Assessment Dossiers (Real & Dynamic Analysis)
+        </h3>
+        <p className="text-[11px] text-slate-500 leading-relaxed">
+          The complete developmental, communication, and leadership indices of individual students can be accessed directly from this master directory.
+        </p>
+
+        {assessments.length === 0 ? (
+          <div className="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            No student psychometric assessments have been submitted yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto no-scrollbar rounded-xl border border-slate-200">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[9px] font-bold">
+                <tr>
+                  <th className="p-3.5 border-b border-slate-200">Student Name</th>
+                  <th className="p-3.5 border-b border-slate-200">Class / Section</th>
+                  <th className="p-3.5 border-b border-slate-200">Anxiety Profile</th>
+                  <th className="p-3.5 border-b border-slate-200 text-center">Growth Index</th>
+                  <th className="p-3.5 border-b border-slate-200">Submission Date</th>
+                  <th className="p-3.5 border-b border-slate-200 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-150 bg-white text-slate-700">
+                {assessments.map((a) => (
+                  <tr key={a.id} className="hover:bg-slate-50 transition">
+                    <td className="p-3.5 font-bold text-slate-800">{a.studentDetails.name}</td>
+                    <td className="p-3.5 text-slate-500 font-semibold">{a.studentDetails.grade} - {a.studentDetails.section}</td>
+                    <td className="p-3.5">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                        a.aiInsights.riskIndicator === 'High' ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20' :
+                        a.aiInsights.riskIndicator === 'Medium' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' :
+                        'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                      }`}>
+                        {a.aiInsights.riskIndicator} Risk
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-center font-bold text-blue-600 font-mono text-[11px]">{a.growthIndex}%</td>
+                    <td className="p-3.5 text-slate-500 font-medium">{new Date(a.date).toLocaleDateString()}</td>
+                    <td className="p-3.5 text-center">
+                      <button
+                        onClick={() => onSelectStudent(a.studentId)}
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 font-bold transition rounded-lg text-[10px] cursor-pointer inline-flex items-center gap-1 shadow-xs border border-blue-100"
+                      >
+                        <FileText className="h-3 w-3" /> View 15-Page Dossier
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* SYSTEM USERS MANAGER TABLE */}

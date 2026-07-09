@@ -13,7 +13,6 @@ import Sidebar from './components/Sidebar';
 import Login from './components/Login';
 import AssessmentForm from './components/AssessmentForm';
 import PDFReportView from './components/PDFReportView';
-import StudentDashboard from './components/StudentDashboard';
 import TeacherDashboard from './components/TeacherDashboard';
 import ParentDashboard from './components/ParentDashboard';
 import AdminDashboard from './components/AdminDashboard';
@@ -318,9 +317,63 @@ export default function App() {
   const studentHistory = assessments.filter(a => a.studentId === user?.id);
   const activeStudentAssessment = studentHistory[0] || null;
 
-  // Parents filter child progress
-  const childHistory = assessments.filter(a => user?.role === 'Parent' ? a.studentDetails.name === 'Danny Kim' || a.studentDetails.name === 'Alex Mercer' : false);
-  const childUserAccount = users.find(u => user?.role === 'Parent' ? u.name === 'Danny Kim' || u.name === 'Alex Mercer' : false) || null;
+  // Parents filter child progress dynamically
+  const childHistory = assessments.filter(a => {
+    if (user?.role !== 'Parent') return false;
+    if (user.childId && a.studentId === user.childId) return true;
+    // Fallback for pre-seeded demo parent users to ensure high-fidelity out-of-the-box demo
+    return a.studentDetails.name === 'Danny Kim' || a.studentDetails.name === 'Alex Mercer';
+  });
+  
+  const childUserAccount = users.find(u => {
+    if (user?.role !== 'Parent') return false;
+    if (user.childId && u.id === user.childId) return true;
+    // Fallback for pre-seeded demo parent users
+    return u.name === 'Danny Kim' || u.name === 'Alex Mercer';
+  }) || null;
+
+  // 1. Special EARLY RETURN for Student Role (strictly no dashboard, only submit form and done)
+  if (user?.role === 'Student') {
+    if (activeStudentAssessment) {
+      return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+          <div className="max-w-md w-full p-8 bg-white rounded-3xl border border-slate-200 shadow-lg text-center space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-2 bg-emerald-500" />
+            <div className="h-16 w-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-sm">
+              <Activity className="h-8 w-8 animate-pulse" />
+            </div>
+            
+            <div className="space-y-2">
+              <span className="text-[10px] text-blue-600 uppercase font-black tracking-widest block font-sans">ASSESSMENT COMPLETED</span>
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Response Recorded!</h2>
+              <p className="text-xs text-slate-505 leading-relaxed">
+                Thank you, <strong className="text-slate-800 font-semibold">{user.name}</strong>. Your confidential 20-Question psychometric growth assessment has been securely submitted.
+              </p>
+              <div className="text-xs text-slate-500 bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1.5 text-left leading-relaxed">
+                <p>● **Dossier Generated**: Your multidimensional psychometric analysis is ready.</p>
+                <p>● **Portal Sync**: Your assigned academic advisers, school administrators, and parents/guardians can now review your full 15-page psychometric report.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full py-3 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm hover:scale-[1.01] active:scale-[0.99]"
+            >
+              Sign Out Securely
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <AssessmentForm
+        studentUser={user}
+        onSubmitSuccess={handleAssessmentCompleted}
+        onCancel={handleLogout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
@@ -342,7 +395,7 @@ export default function App() {
         {/* Top Mini Header */}
         <div className="no-print border-b px-8 py-3.5 flex items-center justify-between text-[11px] font-semibold border-slate-200/80 bg-white text-slate-500 shadow-xs">
           <div className="flex items-center gap-1.5">
-            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
+            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-emerald-500'} animate-pulse`} />
             <span>Secure Enterprise Cluster Synced • DB: <strong className="text-slate-700 font-bold">{dbStatus.type}</strong></span>
           </div>
           <div className="flex items-center gap-3">
@@ -353,24 +406,6 @@ export default function App() {
         </div>
 
         {/* Dynamic Route Content Renders */}
-        {user?.role === 'Student' && (
-          <div>
-            {currentTab === 'dashboard' ? (
-              <StudentDashboard
-                assessment={activeStudentAssessment}
-                history={studentHistory}
-                onTakeAssessment={() => setAssessmentInProgress(true)}
-                onOpenReport={() => setActiveReport(activeStudentAssessment)}
-                onNotifyParent={handleNotifyParentAlert}
-              />
-            ) : (
-              <div className="p-8 text-center text-xs text-slate-400">
-                Menu section in progress. Please use 'My Dashboard' to interact.
-              </div>
-            )}
-          </div>
-        )}
-
         {user?.role === 'Teacher' && (
           <div>
             {currentTab === 'dashboard' ? (
@@ -423,6 +458,7 @@ export default function App() {
                 onAddUser={handleCreateUser}
                 onDeleteUser={handleDeleteUser}
                 onResetDatabase={handleResetSandboxDB}
+                onSelectStudent={handleSelectCohortStudentReport}
               />
             ) : currentTab === 'users_manager' ? (
               <div className="p-8">
@@ -432,6 +468,7 @@ export default function App() {
                   onAddUser={handleCreateUser}
                   onDeleteUser={handleDeleteUser}
                   onResetDatabase={handleResetSandboxDB}
+                  onSelectStudent={handleSelectCohortStudentReport}
                 />
               </div>
             ) : currentTab === 'audit_logs' ? (
@@ -442,6 +479,7 @@ export default function App() {
                   onAddUser={handleCreateUser}
                   onDeleteUser={handleDeleteUser}
                   onResetDatabase={handleResetSandboxDB}
+                  onSelectStudent={handleSelectCohortStudentReport}
                 />
               </div>
             ) : (

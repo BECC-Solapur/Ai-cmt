@@ -242,7 +242,19 @@ const mysqlPort = parseInt(process.env.MYSQL_PORT || '3306', 10);
 async function initMySQL() {
   if (mysqlHost) {
     try {
-      console.log(`Attempting to connect to real MySQL database at ${mysqlHost}:${mysqlPort}...`);
+      console.log(`Ensuring database '${mysqlDatabase}' exists on ${mysqlHost}...`);
+      // Connect without a specific database first to make sure we can create it
+      const tempConn = await mysql.createConnection({
+        host: mysqlHost,
+        user: mysqlUser,
+        password: mysqlPassword,
+        port: mysqlPort,
+        ssl: process.env.MYSQL_SSL === 'true' ? {} : undefined
+      });
+      await tempConn.query(`CREATE DATABASE IF NOT EXISTS \`${mysqlDatabase}\``);
+      await tempConn.end();
+
+      console.log(`Database '${mysqlDatabase}' verified/created. Creating connection pool...`);
       pool = mysql.createPool({
         host: mysqlHost,
         user: mysqlUser,
