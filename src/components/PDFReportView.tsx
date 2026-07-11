@@ -275,7 +275,7 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
             <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block animate-pulse">
               Gemini AI Engaged
             </span>
-            <h2 className="text-2xl font-black tracking-tight text-white">Analyzing and Generating with AI...</h2>
+            <h2 className="text-2xl font-black tracking-tight text-white">Analyzing and Compiling Behavioral Insights...</h2>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
               Please wait while Gemini evaluates 20 cognitive and behavioral dimensions to build a customized, 15-page student development dossier. This includes action plans for parents, teachers, and counselors.
             </p>
@@ -1045,7 +1045,7 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
             <div className="space-y-2">
               <h3 className="text-lg font-black text-slate-900 tracking-tight">{t('Analysis Completed!')}</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                {t('The student psychometric report was successfully analyzed and generated with AI. All 15 pages have been updated with personalized behavioral insights.')}
+                {t('The student psychometric report was successfully analyzed and compiled. All 15 pages have been updated with personalized behavioral insights.')}
               </p>
             </div>
             <button

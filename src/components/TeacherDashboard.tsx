@@ -894,9 +894,9 @@ export default function TeacherDashboard({
                   <span className="text-[10px] bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block animate-pulse">
                     Synthesizing Psychometrics...
                   </span>
-                  <h3 className="text-xl font-black text-white tracking-tight">Analyzing and Generating with AI...</h3>
+                  <h3 className="text-xl font-black text-white tracking-tight">Analyzing and Compiling Behavioral Insights...</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Please wait while Gemini AI evaluates cognitive and behavioral dimensions to build a customized, 15-page student development dossier.
+                    Please wait while Gemini evaluates cognitive and behavioral dimensions to build a customized, 15-page student development dossier.
                   </p>
                 </div>
               </div>
@@ -933,9 +933,9 @@ export default function TeacherDashboard({
                     <CheckCircle className="h-6 w-6" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight">AI Synthesis Updated!</h3>
+                    <h3 className="text-lg font-black text-slate-900 tracking-tight">Synthesis Updated!</h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      The student psychometric analysis and visual charts have been successfully compiled and generated with AI.
+                      The student psychometric analysis and visual charts have been successfully compiled and updated.
                     </p>
                   </div>
                   <button

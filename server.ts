@@ -21,8 +21,17 @@ const PORT = 3000;
 
 // Initialize Gemini Client safely
 let ai: GoogleGenAI | null = null;
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
-if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY' && GEMINI_KEY.trim() !== '') {
+let GEMINI_KEY = process.env.GEMINI_API_KEY;
+
+if (GEMINI_KEY) {
+  GEMINI_KEY = GEMINI_KEY.trim();
+  // Strip surrounding quotes if present
+  if ((GEMINI_KEY.startsWith('"') && GEMINI_KEY.endsWith('"')) || (GEMINI_KEY.startsWith("'") && GEMINI_KEY.endsWith("'"))) {
+    GEMINI_KEY = GEMINI_KEY.substring(1, GEMINI_KEY.length - 1).trim();
+  }
+}
+
+if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY' && GEMINI_KEY !== '' && GEMINI_KEY !== 'undefined') {
   try {
     ai = new GoogleGenAI({
       apiKey: GEMINI_KEY,
