@@ -969,21 +969,28 @@ app.post('/api/assessments/submit', async (req, res) => {
   }).join('\n');
 
   let aiInsights;
+  let usedLocalFallback = false;
 
   if (ai) {
     try {
       aiInsights = await generatePsychometricsWithRetryAndFallback(scores, studentDetails, answersTextSummary, ai);
     } catch (err: any) {
-      console.error('Failed to generate psychometrics with Gemini:', err);
-      return res.status(503).json({
-        error: `Gemini AI failed to generate the report: ${err.message || err}. Please ensure your GEMINI_API_KEY is valid and configured correctly under Settings > Secrets in AI Studio, and that the Gemini API is not experiencing temporary service limits.`
+      console.warn('[Gemini AI Error] Live evaluation failed. Falling back to local counselor synthesis engine:', err.message || err);
+      aiInsights = generateLocalPsychometrics(scores, {
+        name: studentDetails.name,
+        age: parseInt(studentDetails.age, 10) || 16,
+        gender: studentDetails.gender || 'Male'
       });
+      usedLocalFallback = true;
     }
   } else {
-    console.error('Failed to submit: GEMINI_API_KEY is not configured.');
-    return res.status(400).json({
-      error: 'GEMINI_API_KEY is not configured in your environment. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY under Secrets, and restart the development server.'
+    console.log('[Gemini Config] GEMINI_API_KEY not configured. Using local counselor synthesis engine.');
+    aiInsights = generateLocalPsychometrics(scores, {
+      name: studentDetails.name,
+      age: parseInt(studentDetails.age, 10) || 16,
+      gender: studentDetails.gender || 'Male'
     });
+    usedLocalFallback = true;
   }
 
   const assessmentId = `assess_${Date.now()}`;
@@ -1045,15 +1052,17 @@ app.post('/api/assessments/regenerate-ai', async (req, res) => {
   }).join('\n');
 
   let aiInsights;
-  let isSimulated = false;
+  let usedLocalFallback = false;
 
   if (ai) {
     console.log(`Regenerating with Gemini AI for student: ${studentDetails.name}...`);
     let attempt = 0;
     const maxRetries = 2;
+    let succeeded = false;
     while (attempt <= maxRetries) {
       try {
         aiInsights = await generateGeminiPsychometrics(scores, studentDetails, answersTextSummary, ai);
+        succeeded = true;
         break; // Success!
       } catch (err: any) {
         attempt++;
@@ -1062,18 +1071,26 @@ app.post('/api/assessments/regenerate-ai', async (req, res) => {
           const waitTime = attempt * 1500;
           console.log(`Retrying regenerate in ${waitTime}ms...`);
           await delay(waitTime);
-        } else {
-          return res.status(503).json({ 
-            error: `Gemini AI is currently experiencing high demand (${err.message || err}). Please try again in a few moments.` 
-          });
         }
       }
     }
+    if (!succeeded) {
+      console.warn(`[Gemini AI Error] Live regeneration failed. Falling back to local counselor synthesis engine.`);
+      aiInsights = generateLocalPsychometrics(scores, {
+        name: studentDetails.name,
+        age: parseInt(studentDetails.age as any, 10) || 16,
+        gender: studentDetails.gender || 'Male'
+      });
+      usedLocalFallback = true;
+    }
   } else {
-    console.error('Failed to regenerate: GEMINI_API_KEY is not configured.');
-    return res.status(400).json({
-      error: 'GEMINI_API_KEY is not set in your environment variables. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY, and restart the server to enable live Gemini AI psychometric evaluation.'
+    console.log('[Gemini Config] GEMINI_API_KEY not configured. Regenerating using local counselor synthesis engine.');
+    aiInsights = generateLocalPsychometrics(scores, {
+      name: studentDetails.name,
+      age: parseInt(studentDetails.age as any, 10) || 16,
+      gender: studentDetails.gender || 'Male'
     });
+    usedLocalFallback = true;
   }
 
   // Update assessment in-memory and database
@@ -1103,7 +1120,7 @@ app.post('/api/assessments/regenerate-ai', async (req, res) => {
     userName: 'Gemini AI Advisor',
     userRole: 'Admin',
     action: 'Dossier Re-evaluated',
-    details: `Successfully completed a 15-page AI psychometric re-evaluation for ${studentDetails.name} ${isSimulated ? '(Simulated/Fallback)' : '(Live Gemini v3.5)'}.`,
+    details: `Successfully completed a 15-page psychometric re-evaluation for ${studentDetails.name} ${usedLocalFallback ? '(Simulated/Fallback)' : '(Live Gemini v3.5)'}.`,
     timestamp: new Date().toISOString()
   });
 
