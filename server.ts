@@ -22,7 +22,7 @@ const PORT = 3000;
 // Initialize Gemini Client safely
 let ai: GoogleGenAI | null = null;
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY') {
+if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY' && GEMINI_KEY.trim() !== '') {
   try {
     ai = new GoogleGenAI({
       apiKey: GEMINI_KEY,
@@ -37,7 +37,7 @@ if (GEMINI_KEY && GEMINI_KEY !== 'MY_GEMINI_API_KEY') {
     console.error('Failed to initialize Gemini Client:', err);
   }
 } else {
-  console.log('No valid GEMINI_API_KEY environment variable found. Falling back to local scoring engine.');
+  console.log('No valid GEMINI_API_KEY environment variable configured. Live Gemini reports will request configuration.');
 }
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -50,6 +50,7 @@ async function generatePsychometricsWithRetryAndFallback(
   maxRetries = 2
 ): Promise<AIInsights> {
   let attempt = 0;
+  let lastError: any = null;
   while (attempt <= maxRetries) {
     try {
       console.log(`[Gemini Attempt ${attempt + 1}/${maxRetries + 1}] Invoking Gemini AI for ${studentDetails.name}...`);
@@ -58,6 +59,7 @@ async function generatePsychometricsWithRetryAndFallback(
       return insights;
     } catch (err: any) {
       attempt++;
+      lastError = err;
       console.error(`[Gemini Error] Attempt ${attempt} failed for ${studentDetails.name}:`, err.message || err);
       if (attempt <= maxRetries) {
         const waitTime = attempt * 1500; // Exponential backoff: 1.5s, 3s
@@ -67,12 +69,8 @@ async function generatePsychometricsWithRetryAndFallback(
     }
   }
 
-  // If we reach here, all retries failed. Fall back gracefully to local psychometrics!
-  console.warn(`[Gemini Fallback] All ${maxRetries + 1} attempts failed. Falling back gracefully to local rule-based psychometrics for ${studentDetails.name}`);
-  const fallbackInsights = generateLocalPsychometrics(scores, studentDetails);
-  fallbackInsights.isFallback = true;
-  fallbackInsights.summary = `${fallbackInsights.summary}\n\n*(Note: This report was compiled using our secure local psychometric rule engine because the live Gemini AI service was temporarily experiencing high demand. Click 'Regenerate AI' in the Teacher Dashboard to upgrade this report to live Gemini analysis once the service is available.)*`;
-  return fallbackInsights;
+  // All retries failed. Throw the error to make Gemini compulsory!
+  throw new Error(lastError ? (lastError.message || JSON.stringify(lastError)) : "Gemini AI failed to respond after retries.");
 }
 
 // Ensure database folders exist for JSON fallback
@@ -964,12 +962,19 @@ app.post('/api/assessments/submit', async (req, res) => {
   let aiInsights;
 
   if (ai) {
-    aiInsights = await generatePsychometricsWithRetryAndFallback(scores, studentDetails, answersTextSummary, ai);
+    try {
+      aiInsights = await generatePsychometricsWithRetryAndFallback(scores, studentDetails, answersTextSummary, ai);
+    } catch (err: any) {
+      console.error('Failed to generate psychometrics with Gemini:', err);
+      return res.status(503).json({
+        error: `Gemini AI failed to generate the report: ${err.message || err}. Please ensure your GEMINI_API_KEY is valid and configured correctly under Settings > Secrets in AI Studio, and that the Gemini API is not experiencing temporary service limits.`
+      });
+    }
   } else {
-    console.warn('GEMINI_API_KEY is not configured. Falling back to local psychometrics.');
-    aiInsights = generateLocalPsychometrics(scores, studentDetails);
-    aiInsights.isFallback = true;
-    aiInsights.summary = `${aiInsights.summary}\n\n*(Note: This report was compiled using our secure local psychometric rule engine because live Gemini AI is not configured.)*`;
+    console.error('Failed to submit: GEMINI_API_KEY is not configured.');
+    return res.status(400).json({
+      error: 'GEMINI_API_KEY is not configured in your environment. Please open the Settings menu in Google AI Studio, add your GEMINI_API_KEY under Secrets, and restart the development server.'
+    });
   }
 
   const assessmentId = `assess_${Date.now()}`;
