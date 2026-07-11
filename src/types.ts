@@ -23,8 +23,10 @@ export interface Question {
   id: number;
   category: string;
   questionText: string;
+  questionTextMarathi?: string;
   options: {
     text: string;
+    textMarathi?: string;
     score: number; // 1 to 4
   }[];
 }
