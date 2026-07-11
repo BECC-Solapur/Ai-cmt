@@ -82,6 +82,37 @@ export interface AIInsights {
     careerReadinessScore: number; // 0 - 100
     improvementProbability: number; // 0 - 100
   };
+  marathi?: {
+    summary: string;
+    personalityType: string;
+    communicationType: string;
+    leadershipType: string;
+    careerSuggestion: string;
+    topStrengths: string[];
+    topGrowthAreas: string[];
+    studyHabitAnalysis: string;
+    stressHandling: string;
+    decisionMakingStyle: string;
+    emotionalStability: string;
+    motivationPattern: string;
+    teamBehavior: string;
+    criticalThinking: string;
+    problemSolving: string;
+    innovationLevel: string;
+    socialInteraction: string;
+    futureReadiness: string;
+    recommendations: {
+      forStudent: RecommendationItem[];
+      forTeacher: RecommendationItem[];
+      forParent: RecommendationItem[];
+      forCounselor: RecommendationItem[];
+      forSchool: RecommendationItem[];
+      forCareer: RecommendationItem[];
+    };
+    predictions?: {
+      careerCluster: string;
+    };
+  };
   isFallback?: boolean;
 }
 

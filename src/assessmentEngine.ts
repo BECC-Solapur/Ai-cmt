@@ -311,6 +311,230 @@ export function generateLocalPsychometrics(
   // Executive summary
   const summary = `${name} is a highly ${maturity > 70 ? 'reflective' : 'adaptive'} student who shows immense potential in ${careerSuggestion.split(',')[0]}. They thrive when given clear, conceptually challenging work where they can leverage their ${creativity > 70 ? 'original imagination' : 'analytical focus'}. While displaying outstanding pillars of strength, their growth index of ${calculateGrowthIndex(scores)}% can be further unlocked by focusing specifically on reducing anxiety under critique and practicing micro-leadership in team workspaces.`;
 
+  // Marathi fallback translation mappings
+  const personalityTypeMR = {
+    'Strategist (INTJ)': 'रणनीतीकार (INTJ)',
+    'Visionary Campaigner (ENFP)': 'दूरदर्शी प्रचारक (ENFP)',
+    'Executive Commander (ENTJ)': 'कार्यकारी कमांडर (ENTJ)',
+    'Consensus Mediator (INFJ)': 'एकमत मध्यस्थ (INFJ)',
+    'Innovative Architect (INTP)': 'नाविन्यपूर्ण रचनाकार (INTP)',
+    'Quiet Guardian (ISFJ)': 'शांत रक्षक (ISFJ)',
+    'Analytical Specialist (ISTJ)': 'विश्लेषणात्मक तज्ञ (ISTJ)'
+  }[personalityType] || personalityType;
+
+  const careerSuggestionMR = {
+    'Computer Science, Systems Engineering, Data Analytics': 'संगणक शास्त्र, सिस्टम अभियांत्रिकी, डेटा विश्लेषण',
+    'Creative Direction, UI/UX Design, Digital Product Innovation, Communications': 'सर्जनशील दिग्दर्शन, UI/UX डिझाइन, डिजिटल उत्पादन नवकल्पना, संवाद',
+    'Business Operations, Venture Management, Strategic Planning, Public Policy': 'व्यवसाय ऑपरेशन्स, व्हेंचर मॅनेजमेंट, स्ट्रॅटेजिक प्लॅनिंग, सार्वजनिक धोरण',
+    'Educational Psychology, Counseling, Environmental Science, Social Innovation': 'शैक्षणिक मानसशास्त्र, समुपदेशन, पर्यावरण विज्ञान, सामाजिक नवकल्पना',
+    'Software Architecture, AI & ML Engineering, Scientific Research, Cryptography': 'सॉफ्टवेअर आर्किटेक्चर, AI आणि ML अभियांत्रिकी, वैज्ञानिक संशोधन, क्रिप्टोग्राफी',
+    'Clinical Laboratory Science, Database Administration, Technical Writing': 'क्लिनिकल प्रयोगशाळा विज्ञान, डेटाबेस प्रशासन, तांत्रिक लेखन',
+    'Applied Mathematics, Financial Analysis, Cloud Architecture, Industrial Design': 'व्यावहारिक गणित, वित्तीय विश्लेषण, क्लाउड आर्किटेक्चर, औद्योगिक डिझाइन'
+  }[careerSuggestion] || careerSuggestion;
+
+  const communicationTypeMR = {
+    'Assertive & Persuasive': 'स्पष्ट आणि प्रभावी',
+    'Collaborative & Constructive': 'सहयोगी आणि विधायक',
+    'Reflective & Written': 'चिंतनशील आणि लिखित'
+  }[communicationType] || communicationType;
+
+  const leadershipTypeMR = {
+    'Visionary & Inspiring': 'दूरदर्शी आणि प्रेरणादायी',
+    'Democratic & Organizing': 'लोकशाही आणि संघटक',
+    'Independent Support': 'स्वतंत्र सहाय्यक'
+  }[leadershipType] || leadershipType;
+
+  const innovationLevelMR = {
+    'Exceptional': 'असाधारण',
+    'Strong': 'मजबूत',
+    'Moderate': 'मध्यम'
+  }[innovationLevel] || innovationLevel;
+
+  const socialInteractionMR = {
+    'Extroverted & Facilitating': 'बहिर्मुखी आणि सुलभ',
+    'Balanced & Selective': 'संतुलित आणि निवडक',
+    'Introverted & Observing': 'अंतर्मुखी आणि निरीक्षक'
+  }[socialInteraction] || socialInteraction;
+
+  const strengthsMRMap: { [key: string]: string } = {
+    'High self-awareness: regularly reflects on personal capabilities and embraces critique.': 'उच्च आत्म-जागरूकता: वैयक्तिक क्षमतांवर नियमितपणे विचार करतो आणि सकारात्मक टीकेचा स्वीकार करतो।',
+    'Resilient and confident: Welcomes unfamiliar challenges and bounces back from setback.': 'लवचिक आणि आत्मविश्वासी: अपरिचित आव्हानांचे स्वागत करतो आणि अपयशातून पुन्हा उभा राहतो।',
+    'Superb emotional regulation: remains calm and constructive under intense pressure.': 'उत्कृष्ट भावनिक नियंत्रण: तीव्र दबावाखाली शांत आणि विधायक राहतो।',
+    'Articulate communicator: speaks with clarity, presents well, and actively listens.': 'स्पष्ट वक्ता: स्पष्टपणे बोलतो, सादरीकरण उत्तम करतो आणि सक्रियपणे ऐकतो।',
+    'Natural lead potential: steps up in ambiguous groups to coordinate and motivate.': 'नैसर्गिक नेतृत्व क्षमता: अस्पष्ट किंवा नवीन गटांमध्ये समन्वय साधण्यासाठी आणि इतरांना प्रेरित करण्यासाठी पुढाकार घेतो।',
+    'Highly innovative: thinks outside the box and generates original conceptual solutions.': 'अत्यंत नाविन्यपूर्ण: चौकटीबाहेरचा विचार करतो आणि मूळ संकल्पनात्मक उपाय शोधतो।',
+    'Analytical decider: evaluates systematic pros/cons and accepts ownership of outcomes.': 'विश्लेषणात्मक निर्णय घेणारा: पद्धतशीरपणे गुण-दोषांचे मूल्यमापन करतो आणि निकालांची जबाबदारी घेतो।',
+    'Shows robust determination to master challenging topics.': 'कठीण विषय आत्मसात करण्यासाठी मजबूत दृढनिश्चय दाखवतो।',
+    'Exhibits outstanding ethical behavior in collaborative teams.': 'सहयोगी संघांमध्ये उत्कृष्ट नैतिक वर्तन प्रदर्शित करतो।',
+    'Possesses structured study planning abilities.': 'अभ्यासाच्या पद्धतशीर नियोजनाची क्षमता आहे।',
+    'Quickly synthesizes logical arguments.': 'तार्किक युक्तिवाद जलद गतीने तयार करतो।',
+    'Demonstrates highly active listening skills.': 'अत्यंत सक्रिय ऐकण्याची कौशल्ये प्रदर्शित करतो।'
+  };
+
+  const growthMRMap: { [key: string]: string } = {
+    'Self-Reflection: Needs to build consistent habits of reflecting on study routines and mistakes.': 'आत्म-चिंतन: अभ्यासाची दिनचर्या आणि चुकांवर विचार करण्याची सातत्यपूर्ण सवय निर्माण करणे आवश्यक आहे।',
+    'Resilience & Confidence: Tends to hesitate under failure and requires positive reinforcement.': 'लवचिकता आणि आत्मविश्वास: अपयशाच्या वेळी संकोच करण्याची प्रवृत्ती असते आणि सकारात्मक प्रोत्साहनाची आवश्यकता असते।',
+    'Stress Management: Experiences academic anxiety during peak periods, requiring relaxation strategies.': 'ताणतणाव व्यवस्थापन: परीक्षेच्या काळात शैक्षणिक चिंतेचा अनुभव येतो, ज्यामुळे ताण कमी करणाऱ्या तंत्रांची आवश्यकता असते।',
+    'Verbal Expression: Experiences stage fright or hesitation; needs safer opportunities to present ideas.': 'मौखिक अभिव्यक्ती: स्टेजची भीती किंवा संकोच जाणवतो; कल्पना मांडण्यासाठी सुरक्षित संधींची गरज आहे।',
+    'Team Initiatives: Hesitates to take responsibility for group direction; should practice micro-leading.': 'गट उपक्रम: गटाला दिशा देण्याची जबाबदारी घेण्यास संकोच करतो; लहान प्रमाणावर नेतृत्व करण्याचा सराव करावा।',
+    'Cognitive Flexibility: Tends to rely on existing templates; needs encouragement to brainstorm creatively.': 'संज्ञानात्मक लवचिकता: सध्याच्या साच्यांवर अवलंबून राहण्याची प्रवृत्ती असते; सर्जनशीलपणे विचार करण्यासाठी प्रोत्साहनाची गरज आहे।',
+    'Decision Confidence: Tends to postpone choices or overly depend on external guidance.': 'निर्णय आत्मविश्वास: निर्णय पुढे ढकलण्याची किंवा बाह्य मार्गदर्शनावर जास्त अवलंबून राहण्याची प्रवृत्ती असते।',
+    'Should explore connecting daily academic tasks to visual, long-term aspirations.': 'दैनिक शैक्षणिक कार्यांना दीर्घकालीन उद्दिष्टांशी जोडण्याचा प्रयत्न केला पाहिजे।',
+    'Would benefit from engaging in more team-based extracurricular activities.': 'गट-आधारित अवांतर उपक्रमांमध्ये अधिक सहभागी होण्याचा फायदा होईल।',
+    'Needs to practice explaining technical topics to non-technical peers.': 'तांत्रिक विषय अतांत्रिक मित्रांना समजावून सांगण्याचा सराव करणे आवश्यक आहे।'
+  };
+
+  const strengthsMR = strengths.map(s => strengthsMRMap[s] || s);
+  const growthAreasMR = growthAreas.map(g => growthMRMap[g] || g);
+
+  const studyHabitAnalysisMR = learning >= 70
+    ? `${name} अत्यंत पद्धतशीर अभ्यासाच्या सवयी दर्शवतो, ज्यामध्ये माइंड-मॅपिंग आणि सक्रिय शिकण्याच्या पद्धतींचा वापर केला जातो. ही रचनात्मक शिकण्याची आवड त्यांना गुंतागुंतीच्या संकल्पनांचे वर्गीकरण आणि स्मरण करण्यास मदत करते।`
+    : `${name} शांत वाचन आणि नोट्स घेण्यावर जास्त भर देतो. हे शिस्तबद्ध असले तरी मानसिकदृष्ट्या थकवणारे आहे; व्हिज्युअल आकृत्या किंवा तोंडी पुनरावलोकनांचा वापर केल्यास स्मरणशक्तीत लक्षणीय सुधारणा होईल।`;
+
+  const stressHandlingMR = emotional >= 75
+    ? `${name} अत्यंत दबावाच्या परिस्थितीचे कौतुकास्पद भावनिक परिपक्वतेने व्यवस्थापन करतो. ते परीक्षांच्या वेळी तार्किक संतुलन राखतात, ज्यामुळे भीती आणि गोंधळ पूर्णपणे नियंत्रणात राहतो।`
+    : `${name} शैक्षणिक तणावाखाली शारीरिक आणि भावनिक चिंतेचा अनुभव घेतो. श्वासोच्छवासाचे व्यायाम, पद्धतशीर नियोजक आणि आश्वासक, कमी टीका करणारे वातावरण यापासून त्यांना मोठा फायदा होईल।`;
+
+  const decisionMakingStyleMR = decision >= 70
+    ? `निर्णय तर्कसंगत आणि माहिती-आधारित चौकटीतून घेतले जातात. ${name} सक्रियपणे पर्यायांचे मूल्यमापन करतो, भावी परिणामांचा विचार करतो आणि कोणतीही अडचण आल्यास बाह्य घटकांना दोष न देता पूर्ण जबाबदारी घेतो।`
+    : `${name} ला निर्णयांच्या संभ्रमाचा (ॲनालिसिस पॅरालिसिस) अनुभव येतो, ज्यामुळे ते वारंवार मित्र किंवा पालकांवर निर्णय सोपवतात. हे नकारात्मक परिणामांच्या भीतीमुळे होते; त्यांना लहान, स्वतंत्र निर्णय घेण्याचे प्रशिक्षण आवश्यक आहे।`;
+
+  const emotionalStabilityMR = emotional >= 70
+    ? `अत्यंत स्थिर भावनिक पाया प्रदर्शित करतो. ते मतभेदांना विधायक प्रतिसाद देतात आणि आव्हानात्मक मित्र परिवारातही सकारात्मक स्वाभिमान राखतात।`
+    : `शैक्षणिक कामगिरीनुसार भावनिक चढ-उतार होतात. त्यांचे मानसिक संतुलन गुणांवर जास्त अवलंबून असते; केवळ गुणांच्या पलीकडे स्वतःची ओळख निर्माण केल्यास त्यांची प्रतिकारशक्ती स्थिर होईल।`;
+
+  const motivationPatternMR = motivation >= 75
+    ? `उच्च आंतरिक जिज्ञासा आणि बौद्धिक प्रेरणेने प्रेरित आहे. ${name} केवळ गुणांऐवजी विषयाच्या सखोल आकलनासाठी प्रेरित होतो, ज्यामुळे ते दीर्घकालीन संशोधनासाठी एक उत्कृष्ट उमेदवार ठरतात।`
+    : `मुख्यतः बाह्य गोष्टींनी प्रेरित आहे, जसे की बाह्य गुण, पालकांची स्तुती किंवा बक्षिसे. हे अल्प कालावधीसाठी प्रभावी असले तरी, थकवा टाळण्यासाठी त्यांनी स्वतःची आंतरिक उद्दिष्टे विकसित करणे आवश्यक आहे।`;
+
+  const teamBehaviorMR = leadership >= 70
+    ? `एक नैसर्गिक मार्गदर्शक जो लोकशाही सहभागास प्रोत्साहन देतो. सामूहिक कामांमध्ये, ${name} सहानुभूती आणि वेळेचे भान ठेवून उद्दिष्टांवर लक्ष केंद्रित करतो आणि प्रत्येकाचे मत ऐकले जाईल याची खात्री करतो।`
+    : `संघांमध्ये पूरक तांत्रिक भूमिका बजावणे पसंत करतो. ${name} उच्च दर्जाचे वैयक्तिक काम करतो परंतु संघात वाद निर्माण झाल्यास बाजूला होतो; त्यांना विवाह निवारण कौशल्ये विकसित करण्याची आवश्यकता आहे।`;
+
+  const criticalThinkingMR = maturity >= 75
+    ? 'उत्कृष्ट गंभीर विचार क्षमता प्रदर्शित करतो. गृहीतके तपासणे, तार्किक त्रुटी ओळखणे आणि स्वतंत्रपणे गुंतागुंतीचे वैज्ञानिक निकष तयार करणे यात सक्षम आहे।'
+    : 'विश्लेषणात्मक विचार मजबूत आहे परंतु कधीकधी ठराविक साच्यापुरता मर्यादित राहतो. पर्यायी स्पष्टीकरणे शोधण्यासाठी आणि विविध गृहीतके तपासण्यासाठी मार्गदर्शनाची आवश्यकता आहे।';
+
+  const problemSolvingMR = creativity >= 70
+    ? 'चौकटीबाहेरचा विचार करून समस्या सोडवतो, ज्यामुळे पारंपारिक अडचणींवर मात करणारे अत्यंत वैशिष्ट्यपूर्ण मार्ग तयार होतात. संकल्पनात्मक नियोजनात उत्कृष्ट।'
+    : 'समस्या सोडवण्यासाठी मानकीकृत धोरणांचा वापर करतो. रचलेल्या समस्यांच्या बाबतीत अत्यंत अचूक, परंतु खुल्या आणि नव्याने उद्भवणाऱ्या आव्हानांच्या वेळी अडचणी जाणवतात।';
+
+  const futureReadinessMR = career >= 75
+    ? `${name} भविष्यातील व्यावसायिक मार्गांबद्दल स्पष्ट दृष्टी आणि आवड दर्शवतो. ते सक्रियपणे सध्याच्या शिक्षणाला व्यावसायिक क्षेत्रांशी जोडतात, जे त्यांच्या परिपक्वतेचे लक्षण आहे।`
+    : `${name} ची भविष्यातील कारकीर्दीबद्दल सामान्य किंवा थोडी अस्पष्ट दृष्टी आहे. पद्धतशीर कंपनी भेटी, तांत्रिक सेमिनार किंवा प्रत्यक्ष कामाचा अनुभव त्यांना त्यांच्या आकांक्षा स्पष्ट करण्यास मदत करेल।`;
+
+  // Mapped local recommendations translated into Marathi
+  const recommendationsMR = {
+    forStudent: [
+      {
+        recommendation: 'सक्रिय व्हिज्युअल मेमरी साधने स्वीकारा (माइंड मॅप्स आणि फ्लोचार्ट्स)',
+        reason: `${name} ची शिकण्याची शैली संबंधात्मक व्हिज्युअल संकेतांवर विकसित होते. त्यांच्या वैचारिक प्रक्रियेसाठी पारंपारिक पाठांतर अकार्यक्षम आहे.`,
+        priority: 'High' as const,
+        expectedOutcome: 'दीर्घकालीन संकल्पना लक्षात ठेवण्यात ३०% वाढ, परीक्षेच्या तयारीचा थकवा कमी होईल.',
+        timeline: 'त्वरित (पुढील २ आठवडे)'
+      },
+      {
+        recommendation: 'परीक्षांच्या अपयशासाठी "फेलीअर रिफ्रेम" जर्नल तयार करा',
+        reason: 'टीका किंवा कमी गुणांमुळे होणारी आत्मविश्वासातील घट रोखण्यासाठी स्वतःबद्दल संशय घेण्याऐवजी कृती आराखड्यांची नोंद करा.',
+        priority: 'Medium' as const,
+        expectedOutcome: 'स्थिर शैक्षणिक आत्मविश्वास आणि अपयशातून जलद गतीने सावरण्याची क्षमता.',
+        timeline: 'चालू (पुढील १ महिना)'
+      }
+    ],
+    forTeacher: [
+      {
+        recommendation: 'वैज्ञानिक/सर्जनशील कामांमध्ये लहान-लहान नेतृत्व भूमिका सोपवा',
+        reason: `${name} मध्ये नेतृत्वाचा पाया आहे पण स्वतःहून पुढाकार घेण्यास संकोच करतो. पद्धतशीरपणे जबाबदारी दिल्यास त्यांचा संकोच दूर होईल.`,
+        priority: 'High' as const,
+        expectedOutcome: 'बोलण्याचा आत्मविश्वास वाढेल, भूमिकेची जबाबदारी समजेल आणि प्रत्यक्ष अंमलबजावणीची क्षमता सुधारेल.',
+        timeline: 'सध्याच्या सत्रात'
+      },
+      {
+        recommendation: 'केवळ गुणांऐवजी निकष-आधारित मूल्यमापन द्या',
+        reason: 'विद्यार्थ्याला केवळ गुणांच्या टक्केवारीवर भावनिक प्रतिक्रिया देण्याऐवजी विशिष्ट कौशल्य प्रगतीवर लक्ष केंद्रित करण्यास मदत करणे.',
+        priority: 'Medium' as const,
+        expectedOutcome: 'गुणांशी संबंधित चिंता कमी होईल आणि अत्यंत लक्ष्यित सुधारणा होईल.',
+        timeline: 'पुढील शैक्षणिक मूल्यमापन चक्रात'
+      }
+    ],
+    forParent: [
+      {
+        recommendation: 'दर आठवड्याला सक्रिय "गृह चिंतन तास" निश्चित करा',
+        reason: 'गुणांऐवजी वैयक्तिक विकास, प्रयत्न आणि शिकलेल्या धड्यांवर लक्ष केंद्रित करून कमी दबावाखालील संवाद साधून आत्म-जागरूकतेला पाठबळ देणे.',
+        priority: 'High' as const,
+        expectedOutcome: 'पालक-पाल्य यांच्यातील दृढ विश्वास आणि भावनिक आत्म-नियंत्रणात सुधारणा.',
+        timeline: 'प्रत्येक रविवारी संध्याकाळी'
+      },
+      {
+        recommendation: 'गैर-शैक्षणिक कोडिंग किंवा कला शिबिरांमध्ये प्रवेश घेण्यास प्रोत्साहित करा',
+        reason: `हे ${name} च्या सर्जनशीलतेशी सुसंगत आहे आणि कमी जोखमीच्या वातावरणात अपयशाचा सामना करण्याची जागा प्रदान करते, ज्यामुळे आत्मविश्वास बळकट होतो.`,
+        priority: 'Medium' as const,
+        expectedOutcome: 'समस्या सोडवण्याची व्यापक कौशल्ये आणि आत्मविश्वासाचे दुय्यम स्तंभ.',
+        timeline: 'येणाऱ्या उन्हाळी/हिवाळी सुट्ट्या'
+      }
+    ],
+    forCounselor: [
+      {
+        recommendation: 'मासिक संज्ञानात्मक-वर्तणूक लवचिकता सत्रे आयोजित करा',
+        reason: `${name} ला शैक्षणिक तणावाचा सामना करण्यास आणि परीक्षेच्या काळात भावनिक चढ-उतारांचे व्यवस्थापन करण्यास मदत करते.`,
+        priority: 'Medium' as const,
+        expectedOutcome: 'भावनिक आत्म-जागरूकता वाढेल आणि चिंतेचा सामना करण्यासाठी वैयक्तिक साधनसामग्री मिळेल.',
+        timeline: 'मासिक तपासणी'
+      }
+    ],
+    forSchool: [
+      {
+        recommendation: 'गतिमान बहु-शाखीय आव्हाने समाविष्ट करा',
+        reason: 'चौकटीबाहेरची नवकल्पना, सर्जनशीलता आणि स्वयं-संघटनेला प्रोत्साहन देणारे खुले प्रकल्प पर्याय उपलब्ध करणे.',
+        priority: 'Low' as const,
+        expectedOutcome: 'विविध प्रकारच्या विद्यार्थ्यांचे आणि मूळ विचारांचे कौतुक करणारी संस्कृती.',
+        timeline: 'पुढील शाळा महोत्सव/प्रदर्शन'
+      }
+    ],
+    forCareer: [
+      {
+        recommendation: 'ज्येष्ठ वास्तुविशारद/संचालकांसोबत प्रत्यक्ष अनुभव घेण्याचा कार्यक्रम आयोजित करा',
+        reason: `हे उच्च-स्तरीय अभियांत्रिकी किंवा व्हिज्युअल डिझाइनमधील ${name} च्या कारकीर्दीतील आवडींना पुष्टी देते आणि मजबूत बाह्य प्रेरणा निर्माण करते.`,
+        priority: 'High' as const,
+        expectedOutcome: 'अमूल्य व्यावहारिक अनुभव आणि विद्यापीठीय शिक्षणाच्या मार्गांची अचूक निवड.',
+        timeline: 'पुढील ३ महिने'
+      }
+    ]
+  };
+
+  const careerClusterMR = creativity > 70 ? 'तंत्रज्ञान आणि डिजिटल क्रिएटिव्ह डिझाइन' : leadership > 70 ? 'व्यवसाय प्रशासन आणि उपक्रम' : 'व्यावहारिक विज्ञान आणि संशोधन विश्लेषण';
+
+  // Dynamic summary template translated
+  const primaryCareerMR = careerSuggestionMR.split(',')[0].trim();
+  const focusDetailMR = creativity > 70 ? 'सर्जनशील कल्पनाशक्तीचा' : 'विश्लेषणात्मक लक्ष केंद्रित करण्याचा';
+  const maturityTermMR = maturity > 70 ? 'चिंतनशील' : 'अनुकूलनशील';
+  const summaryMR = `${name} हा/ही एक अत्यंत ${maturityTermMR} विद्यार्थी आहे, ज्याच्यामध्ये ${primaryCareerMR} क्षेत्रात प्रचंड क्षमता आहे. जेव्हा त्यांना स्पष्ट आणि वैचारिक आव्हानात्मक कामे दिली जातात तेव्हा ते उत्कृष्ट कामगिरी करतात, जिथे ते त्यांच्या ${focusDetailMR} पुरेपूर वापर करू शकतात. त्यांच्यामध्ये उत्कृष्ट शक्तीचे पैलू दिसत असले तरी, त्यांचा ${calculateGrowthIndex(scores)}% का विकास निर्देशांक (Growth Index) अजून अनलॉक केला जाऊ शकतो. यासाठी त्यांनी विशेषतः टीका स्वीकारताना येणारी चिंता कमी करणे आणि सामूहिक कामांमध्ये लहान प्रमाणावर नेतृत्व सराव करण्यावर लक्ष केंद्रित करणे आवश्यक आहे.`;
+
+  const marathi = {
+    summary: summaryMR,
+    personalityType: personalityTypeMR,
+    communicationType: communicationTypeMR,
+    leadershipType: leadershipTypeMR,
+    careerSuggestion: careerSuggestionMR,
+    topStrengths: strengthsMR,
+    topGrowthAreas: growthAreasMR,
+    studyHabitAnalysis: studyHabitAnalysisMR,
+    stressHandling: stressHandlingMR,
+    decisionMakingStyle: decisionMakingStyleMR,
+    emotionalStability: emotionalStabilityMR,
+    motivationPattern: motivationPatternMR,
+    teamBehavior: teamBehaviorMR,
+    criticalThinking: criticalThinkingMR,
+    problemSolving: problemSolvingMR,
+    innovationLevel: innovationLevelMR,
+    socialInteraction: socialInteractionMR,
+    futureReadiness: futureReadinessMR,
+    recommendations: recommendationsMR,
+    predictions: {
+      careerCluster: careerClusterMR
+    }
+  };
+
   return {
     summary,
     personalityType,
@@ -332,7 +556,8 @@ export function generateLocalPsychometrics(
     futureReadiness,
     riskIndicator,
     recommendations,
-    predictions
+    predictions,
+    marathi
   };
 }
 
@@ -404,9 +629,40 @@ interface AIInsights {
     careerReadinessScore: number; // 0 - 100
     improvementProbability: number; // 0 - 100
   };
+  marathi: {
+    summary: string; // Translates summary to perfect, professional, and grammatically flawless Marathi.
+    personalityType: string; // Personality type in Marathi. e.g., "दूरदर्शी प्रचारक (ENFP)"
+    communicationType: string; // Communication style in Marathi. e.g., "स्पष्ट आणि प्रभावी"
+    leadershipType: string; // Leadership style in Marathi. e.g., "लोकशाही आणि संघटक"
+    careerSuggestion: string; // Comma-separated list of highly specific modern careers in Marathi.
+    topStrengths: string[]; // EXACTLY 5 strengths translated to Marathi.
+    topGrowthAreas: string[]; // EXACTLY 3 growth areas translated to Marathi.
+    studyHabitAnalysis: string; // Study habit analysis translated to Marathi.
+    stressHandling: string; // Stress and anxiety management translated to Marathi.
+    decisionMakingStyle: string; // Choice evaluation and accountability translated to Marathi.
+    emotionalStability: string; // Stability baseline translated to Marathi.
+    motivationPattern: string; // Motivation pattern translated to Marathi.
+    teamBehavior: string; // Social collaboration translated to Marathi.
+    criticalThinking: string; // High-level analytical skills translated to Marathi.
+    problemSolving: string; // Lateral vs vertical problem solving translated to Marathi.
+    innovationLevel: string; // Translated innovation level: "असाधारण", "मजबूत", "मध्यम"
+    socialInteraction: string; // Translated social interaction style: "बहिर्मुखी आणि सुलभ", "संतुलित", "अंतर्मुखी"
+    futureReadiness: string; // Professional alignment translated to Marathi.
+    recommendations: {
+      forStudent: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[]; // All fields except priority must be translated to Marathi.
+      forTeacher: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[];
+      forParent: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[];
+      forCounselor: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[];
+      forSchool: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[];
+      forCareer: { recommendation: string; reason: string; priority: 'High'|'Medium'|'Low'; expectedOutcome: string; timeline: string }[];
+    };
+    predictions: {
+      careerCluster: string; // Translated career cluster name.
+    };
+  };
 }
 
-Ensure all JSON properties are valid and strictly match the types. Do not include markdown wraps besides valid JSON.`;
+CRITICAL: The "marathi" property MUST contain 100% correct, grammatically perfect, natural, and highly professional Marathi translations of all corresponding textual insights and recommendation fields to satisfy our school boards and parents. Keep the exact same meaning, names, numbers, and priorities. Do not use informal or broken Marathi. Ensure all JSON properties are valid and strictly match the types. Do not include markdown wraps besides valid JSON.`;
 
   const response = await geminiClient.models.generateContent({
     model: 'gemini-3.5-flash',
