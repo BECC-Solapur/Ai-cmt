@@ -93,7 +93,7 @@ const DB_PATH = path.join(DATA_DIR, 'db.json');
 // Initialize database with premium pre-seeded data
 function getInitialData(seedStudents: boolean = false) {
   const initialUsers: User[] = [
-    { id: 'user_admin_1', email: 'admin@school.edu', name: 'Principal Evelyn Vance', role: 'Admin', school: 'Pinecrest Academy', createdAt: '2026-01-10T10:00:00Z' },
+    { id: 'user_admin_1', email: 'admin@school.edu', name: 'Counsellor Kiran Kulkarni', role: 'Admin', school: 'Pinecrest Academy', createdAt: '2026-01-10T10:00:00Z' },
     { id: 'user_teacher_1', email: 'teacher@school.edu', name: 'Dr. Sarah Jenkins', role: 'Teacher', school: 'Pinecrest Academy', className: 'Grade 10', section: 'A', createdAt: '2026-01-11T11:00:00Z' },
     { id: 'user_counselor_1', email: 'counselor@school.edu', name: 'Marcus Brody, Counselor', role: 'Teacher', school: 'Pinecrest Academy', className: 'Grade 11', section: 'B', createdAt: '2026-01-12T12:00:00Z' },
   ];
@@ -233,13 +233,13 @@ function getInitialData(seedStudents: boolean = false) {
   ] : [];
 
   const initialAuditLogs: AuditLog[] = [
-    { id: 'log_1', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'Database Initialized', details: seedStudents ? 'Enterprise student analytics database successfully pre-seeded with 6 month cohort trend data.' : 'Clean sandbox database initialized successfully.', timestamp: '2026-07-08T10:00:00Z' },
-    { id: 'log_2', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'User Created', details: 'Created Teacher account for Dr. Sarah Jenkins (Grade 10, Sec A).', timestamp: '2026-07-08T10:05:00Z' },
+    { id: 'log_1', userId: 'user_admin_1', userName: 'Counsellor Kiran Kulkarni', userRole: 'Admin', action: 'Database Initialized', details: seedStudents ? 'Enterprise student analytics database successfully pre-seeded with 6 month cohort trend data.' : 'Clean sandbox database initialized successfully.', timestamp: '2026-07-08T10:00:00Z' },
+    { id: 'log_2', userId: 'user_admin_1', userName: 'Counsellor Kiran Kulkarni', userRole: 'Admin', action: 'User Created', details: 'Created Teacher account for Dr. Sarah Jenkins (Grade 10, Sec A).', timestamp: '2026-07-08T10:05:00Z' },
   ];
 
   if (seedStudents) {
     initialAuditLogs.push(
-      { id: 'log_3', userId: 'user_admin_1', userName: 'Principal Evelyn Vance', userRole: 'Admin', action: 'User Created', details: 'Created Parent account for Robert Mercer (Alex Mercer).', timestamp: '2026-07-08T10:10:00Z' }
+      { id: 'log_3', userId: 'user_admin_1', userName: 'Counsellor Kiran Kulkarni', userRole: 'Admin', action: 'User Created', details: 'Created Parent account for Robert Mercer (Alex Mercer).', timestamp: '2026-07-08T10:10:00Z' }
     );
   }
 
@@ -804,7 +804,7 @@ app.post('/api/admin/create-user', async (req, res) => {
   await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'user_admin_1',
-    userName: 'Principal Evelyn Vance',
+    userName: 'Counsellor Kiran Kulkarni',
     userRole: 'Admin',
     action: `User Created`,
     details: `Admin created ${role} account: ${name} (${email}).`,
@@ -882,7 +882,7 @@ app.delete('/api/admin/delete-user/:userId', async (req, res) => {
   await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'user_admin_1',
-    userName: 'Principal Evelyn Vance',
+    userName: 'Counsellor Kiran Kulkarni',
     userRole: 'Admin',
     action: `User Deleted`,
     details: `Deleted user profile: ${target.name} (${target.email}).`,
@@ -918,7 +918,7 @@ app.delete('/api/admin/delete-student/:studentId', async (req, res) => {
   await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'user_admin_1',
-    userName: 'Principal Evelyn Vance',
+    userName: 'Counsellor Kiran Kulkarni',
     userRole: 'Admin',
     action: `Student & Assessments Deleted`,
     details: `Deleted student profile and all associated reports for ${name} (${email}).`,
@@ -935,7 +935,7 @@ app.post('/api/admin/clear-database', async (req, res) => {
   await addAuditLog({
     id: `log_${Date.now()}`,
     userId: 'user_admin_1',
-    userName: 'Principal Evelyn Vance',
+    userName: 'Counsellor Kiran Kulkarni',
     userRole: 'Admin',
     action: `Database Wiped`,
     details: `Administrative database wipe completed. All pre-seeded and custom students, parents, teachers, and assessments deleted.`,
