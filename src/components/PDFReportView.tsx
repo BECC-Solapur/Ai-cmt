@@ -139,7 +139,7 @@ const TRANSLATIONS_MR: { [key: string]: string } = {
   'Random Selection Probability': 'यादृच्छिक निवड संभाव्यता',
   'Falsification Index': 'बनावटीकरण निर्देशांक',
   'Negligible (VALID)': 'नगण्य (वैध)',
-  'Principal Evelyn Vance': 'प्राचार्य इव्हलिन व्हॅन्स',
+  'Counsellor Kiran Kulkarni': 'समुपदेशक किरण कुलकर्णी',
   'Administrative Representative': 'प्रशासकीय प्रतिनिधी',
   'Dr. Raymond Croft, Psy.D.': 'डॉ. रेमंड क्रॉफ्ट, Psy.D.',
   'Senior Psychometrics Evaluator': 'वरिष्ठ मानसोपचार मूल्यमापक',
@@ -219,45 +219,9 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
     return key;
   };
 
+
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleRegenerate = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      const response = await fetch('/api/assessments/regenerate-ai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ assessmentId: assessment.id })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (onAssessmentUpdated) {
-          onAssessmentUpdated(data.assessment);
-        }
-        setShowSuccessPopup(true);
-      } else {
-        const errData = await response.json();
-        const errText = errData.error || 'Failed to regenerate report with Gemini AI.';
-        setErrorMsg(errText);
-        setPopupErrorDetails(errText);
-        setShowFailurePopup(true);
-      }
-    } catch (err: any) {
-      console.error(err);
-      const errText = 'Network error while requesting live Gemini evaluation.';
-      setErrorMsg(errText);
-      setPopupErrorDetails(errText);
-      setShowFailurePopup(true);
-    } finally {
-      setLoading(false);
-    }
   };
   if (loading) {
     return (
@@ -343,13 +307,6 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleRegenerate}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 text-indigo-700 hover:text-indigo-800 text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
-              title="Re-analyze with Live Gemini AI model to generate 100% personalized psychological paragraphs"
-            >
-              <Sparkles className="h-4 w-4 text-indigo-500" /> {t('Regenerate with Gemini AI')}
-            </button>
             <button
               onClick={handlePrint}
               className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow shadow-blue-500/10 transition cursor-pointer"
@@ -1011,9 +968,9 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
               <div className="pt-16 grid grid-cols-2 gap-12 mt-12">
                 <div className="space-y-2 border-t border-slate-200 pt-4 text-center">
                   <div className="h-10 flex items-center justify-center font-serif text-slate-500 italic text-sm">
-                    {t('Evelyn Vance')}
+                    {t('Kiran Kulkarni')}
                   </div>
-                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px]">{t('Principal Evelyn Vance')}</p>
+                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px]">{t('Counsellor Kiran Kulkarni')}</p>
                   <p className="text-slate-400 text-[9px]">{t('Administrative Representative')}</p>
                 </div>
 
