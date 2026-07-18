@@ -563,7 +563,7 @@ export default function PDFReportView({ assessment, onClose, onAssessmentUpdated
               {Object.entries(scores).map(([category, val], idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-slate-800">
-                    <span>{CATEGORY_LABELS_MR[category] || CATEGORY_LABELS[category] || category}</span>
+                    <span>{lang === 'mr' ? (CATEGORY_LABELS_MR[category] || category) : (CATEGORY_LABELS[category] || category)}</span>
                     <span className="font-mono text-brand-600">{val}%</span>
                   </div>
                   <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
